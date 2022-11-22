@@ -24,7 +24,8 @@ while True:
     # Wait for next point sent from robot
     message = socket.recv_string()
 
-    point = eval(message[message.find('('):])
+    point = eval(message[message.find('('):message.find(')')+1])
+
     x.append(point[0])
     y.append(point[1])
     
