@@ -14,7 +14,7 @@ import threading
 from motor_class import Motor
 
 def motors_main():
-    # createa zmq context and socket for REQ/REP
+    # create a zmq context and socket for REQ/REP
     context = zmq.Context()
     socket = context.socket(zmq.REP)
     socket.bind("tcp://*:5555")
@@ -27,30 +27,37 @@ def motors_main():
         message = socket.recv()
         logging.info("Received motor request: %s" % message)
 
-        # if the message is move forward, move the robot forward
-        if message == b"F":
-            motor.setMotorModel(2000,2000,2000,2000)             # Move Forward 
-            time.sleep(3)
+        # parse message as a character followed by a number
+        # character indicates direction of movement
+        # number indicates distance of movement
+        direction = message[0]
+        distance = int(message[1:])
+        logging.info("Direction: %s, Distance: %s" % (direction, distance))
+
+        # if the message is move backward, move the robot backward
+        if direction == b"B":
+            motor.setMotorModel(2000,2000,2000,2000)             # Move backward 
+            time.sleep(distance)
             motor.setMotorModel(0,0,0,0)                         # Stop
-            socket.send(b"Moved forward")
-        # if the message is turn left, turn the robot left
-        elif message == b"L":
-            motor.setMotorModel(-500,-500,2000,2000)             # Turn Left
-            time.sleep(3)
-            motor.setMotorModel(0,0,0,0)
-            socket.send(b"Turned left")
+            socket.send(b"Moved backward")
         # if the message is turn right, turn the robot right
-        elif message == b"R":
-            motor.setMotorModel(2000,2000,-500,-500)             # Turn Right
-            time.sleep(3)
+        elif direction == b"R":
+            motor.setMotorModel(-500,-500,2000,2000)             # Turn right
+            time.sleep(distance)
             motor.setMotorModel(0,0,0,0)
             socket.send(b"Turned right")
-        # if the message is move backward, move the robot backward
-        elif message == b"B":
-            motor.setMotorModel(-2000,-2000,-2000,-2000)
-            time.sleep(3)
+        # if the message is turn left, turn the robot left
+        elif direction == b"L":
+            motor.setMotorModel(2000,2000,-500,-500)             # Turn left
+            time.sleep(distance)
             motor.setMotorModel(0,0,0,0)
-            socket.send(b"Moved backward")
+            socket.send(b"Turned left")
+        # if the message is move forward, move the robot forward
+        elif direction == b"F":
+            motor.setMotorModel(-2000,-2000,-2000,-2000)
+            time.sleep(distance)
+            motor.setMotorModel(0,0,0,0)
+            socket.send(b"Moved forward")
         # if the message is unknown, send an error message
         else:
             motor.setMotorModel(0,0,0,0)
