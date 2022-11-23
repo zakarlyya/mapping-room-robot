@@ -24,31 +24,17 @@ if __name__ == '__main__':
     socket = context.socket(zmq.REQ)
     socket.connect("tcp://localhost:5555")
 
+    # configure loggint to display info messages
+    logging.basicConfig(level=logging.INFO)
 
-    # send a message to move forward
-    socket.send(b"F")
-    message = socket.recv()
-    logging.info("Received reply: %s" % message)
-
-    # send a message to turn left
-    socket.send(b"L")
-    message = socket.recv()
-    logging.info("Received reply: %s" % message)
-
-    # send a message to turn right
-    socket.send(b"R")
-    message = socket.recv()
-    logging.info("Received reply: %s" % message)
-
-    # send a message to move backward
-    socket.send(b"B")
-    message = socket.recv()
-    logging.info("Received reply: %s" % message)
-
-    # send a message to stop (this will register as unknown)
-    socket.send(b"S")
-    message = socket.recv()
-    logging.info("Received reply: %s" % message)
+    # In a loop, wait for terminal input and send the input to the motors thread, exit loop if input is 'q'
+    while True:
+        message = input("Enter a command: ")
+        if message == 'q':
+            break
+        socket.send(message.encode('utf-8'))
+        reply = socket.recv()
+        logging.info("Received reply: %s" % reply)
 
     # close the socket and forcibly terminate the motors thread
     socket.close()
