@@ -30,7 +30,7 @@ def motors_main():
         # parse message as a character followed by a number
         # character indicates direction of movement
         # number indicates distance of movement
-        direction = message[0]
+        direction = chr(message[0])
         distance = int(message[1:])
         logging.info("Direction: %s, Distance: %s" % (direction, distance))
 
