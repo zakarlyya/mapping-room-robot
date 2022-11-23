@@ -29,9 +29,9 @@ def motors_main():
 
         # parse message as a character followed by a number
         # character indicates direction of movement
-        # number indicates distance of movement
+        # floating point number indicates distance of movement
         direction = chr(message[0])
-        distance = int(message[1:])
+        distance = float(message[1:])
         logging.info("Direction: %s, Distance: %s" % (direction, distance))
 
         # if the message is move backward, move the robot backward
