@@ -35,25 +35,25 @@ def motors_main():
         logging.info("Direction: %s, Distance: %s" % (direction, distance))
 
         # if the message is move backward, move the robot backward
-        if direction == b"B":
+        if direction == 'B':
             motor.setMotorModel(2000,2000,2000,2000)             # Move backward 
             time.sleep(distance)
             motor.setMotorModel(0,0,0,0)                         # Stop
             socket.send(b"Moved backward")
         # if the message is turn right, turn the robot right
-        elif direction == b"R":
+        elif direction == 'R':
             motor.setMotorModel(-500,-500,2000,2000)             # Turn right
             time.sleep(distance)
             motor.setMotorModel(0,0,0,0)
             socket.send(b"Turned right")
         # if the message is turn left, turn the robot left
-        elif direction == b"L":
+        elif direction == 'L':
             motor.setMotorModel(2000,2000,-500,-500)             # Turn left
             time.sleep(distance)
             motor.setMotorModel(0,0,0,0)
             socket.send(b"Turned left")
         # if the message is move forward, move the robot forward
-        elif direction == b"F":
+        elif direction == 'F':
             motor.setMotorModel(-2000,-2000,-2000,-2000)
             time.sleep(distance)
             motor.setMotorModel(0,0,0,0)
