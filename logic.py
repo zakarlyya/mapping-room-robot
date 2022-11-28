@@ -17,17 +17,24 @@
 #
 # Terminate when robot comes back to 0,0
 
-import enum
 import logging
 import threading
 import time
 import queue
 import zmq
 
+from enum import Enum
+
 # Import motor class from motor_class.py
 from motor_class import Motor
 
-directions = enum('NORTH', 'EAST', 'SOUTH', 'WEST')
+class directions(Enum):
+    FORWARD = 1
+    BACKWARD = 2
+    LEFT = 3
+    RIGHT = 4
+
+directions = Enum('directions', 'FORWARD BACKWARD LEFT RIGHT')
 
 def logic_main():
     
