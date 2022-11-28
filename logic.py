@@ -28,11 +28,13 @@ from enum import Enum
 # Import motor class from motor_class.py
 from motor_class import Motor
 
-class direction(self):
-    NORTH = 1
-    EAST = 2
-    SOUTH = 3
-    WEST = 4
+class direction:
+
+    def __init__(self):
+        self.NORTH = 1
+        self.EAST = 2
+        self.SOUTH = 3
+        self.WEST = 4
 
 def logic_main():
     
