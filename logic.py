@@ -131,16 +131,16 @@ def logic_main():
             sensor_data = sensor_socket.recv_string()
 
             logging.info("Received sensor data: %s" % sensor_data)
-            
-            server_socket.send_string(sensor_data)
 
             # parse the sensor data as [angle], [distance]
             sensor_data = sensor_data.split(",")
             current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
 
-            # calculate the absolute position of the measured object using the robots current position, 
+            # calculate the absolute position of the measured object using the robots current position,
             # measured angle, and measured distance and then add the location to the positions list
-            points.append(robot.calculateAbsolutePosition(current_readings[0][0], current_readings[0][1]))
+            point = robot.calculateAbsolutePosition(current_readings[0][0], current_readings[0][1])
+            points.append(point)
+            server_socket.send_string(str(point))
 
         # if the robot is ready to move, move it
         if ready_to_move:
