@@ -18,6 +18,7 @@
 # Terminate when robot comes back to 0,0
 
 import logging
+import math
 import threading
 import time
 import queue
@@ -89,6 +90,8 @@ def logic_main():
     # Create a ready_to_move flag
     ready_to_move = True
 
+    net_num_left_turns = 0
+
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
 
@@ -99,11 +102,11 @@ def logic_main():
 
         current_readings = [] # list of sensor readings
 
-        # mapping_done if robot is within 3 units of 0,0
-        #if robot.pos[0] < 3 and robot.pos[1] < 3:
-        #    mapping_done = True
-        #    logging.info("Mapping done")
-        #    break
+        # mapping_done if robot net_num_left_turns is 4
+        if net_num_left_turns == 4:
+            mapping_done = True
+            logging.info("Mapping complete")
+            continue
 
         # if the start socket has a stop signal, mapping_done is true
         if start_socket in socks and socks[start_socket] == zmq.POLLIN:
@@ -114,6 +117,7 @@ def logic_main():
                 break
             else:
                 logging.ERROR("Received unknown stop signal from main: %s" % message)
+
         elif motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
             # if the motor socket has a reply, update positional data
             motor_movement = motor_socket.recv()
@@ -163,8 +167,10 @@ def logic_main():
                 robot.moveForward(0.1)
             elif vote_left > vote_forward and vote_left > vote_right:
                 robot.turnLeft()
+                net_num_left_turns += 1
             elif vote_right > vote_forward and vote_right > vote_left:
                 robot.turnRight()
+                net_num_left_turns -= 1
             else:
                 logging.error("No clear vote for next move, robot will move forward slightly")
                 robot.moveForward(0.1)
