@@ -122,7 +122,7 @@ def logic_main():
 
         elif sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN:
             
-            sensor_data = sensor_socket.recv()
+            sensor_data = sensor_socket.recv_string()
 
             logging.info("Received sensor data: %s" % sensor_data)
 
