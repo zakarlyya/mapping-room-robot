@@ -17,14 +17,15 @@ from logic import logic_main
 # import motors.py
 from motors import motors_main
 # import sensor.py
+from sensor import sensor_main
 
 
 if __name__ == '__main__':
     # create threads
-    logic_thread = threading.Thread(target=logic_main, args=(q,))
-    motors_thread = threading.Thread(target=motors_main, args=(q,))
+    logic_thread = threading.Thread(target=logic_main)
+    motors_thread = threading.Thread(target=motors_main)
     #server_thread = threading.Thread(target=server_main, args=(q,))
-    sensor_thread = threading.Thread(target=sensor_main, args=(q,))
+    sensor_thread = threading.Thread(target=sensor_main)
 
     # start the threads
     motors_thread.start()
@@ -52,7 +53,7 @@ if __name__ == '__main__':
         else:
             logging.info("Unknown command: %s" % message)
 
-'''
+    '''
     # create REQ/REP socket to communicate with server
     server_context = zmq.Context()
     server_socket = server_context.socket(zmq.REQ)
@@ -73,7 +74,7 @@ if __name__ == '__main__':
 
         # Reply to server
         server_socket.send(b"ACK")
-'''
+    '''
 
     # join threads
     logic_thread.join()

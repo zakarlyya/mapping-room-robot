@@ -17,23 +17,33 @@
 #
 # Terminate when robot comes back to 0,0
 
-import enum
 import logging
 import threading
 import time
 import queue
 import zmq
 
+from enum import Enum
+
 # Import motor class from motor_class.py
 from motor_class import Motor
 
-directions = enum('NORTH', 'EAST', 'SOUTH', 'WEST')
+# define the values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
+class Direction(Enum):
+    NORTH = 0
+    EAST = 1
+    SOUTH = 2
+    WEST = 3
+
+
 
 def logic_main():
     
     # Initialize variables
     current_pos = [0,0]
-    current_direction = directions.NORTH
+    
+    # use direction enum to set current_direction to NROTH
+    current_direction = Direction.NORTH
 
     # create a data structure which stores the coordinates of all points visited by the robot
     positions = []  # list of lists
@@ -54,7 +64,7 @@ def logic_main():
     sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
 
     # create instance of Robot class
-    robot = Robot(pos=current_pos, direction=current_direction, motor_socket=motor_socket)
+    robot = Robot(pos=current_pos, dir=current_direction, skt=motor_socket)
 
     # wait for the start signal on start socket
     while True:
@@ -166,7 +176,7 @@ def logic_main():
 
 
 class Robot:
-    def __init__(self, pos, dir, motorsocket):
+    def __init__(self, pos, dir, skt):
         self.pos = pos
         self.dir = dir
 
@@ -184,16 +194,16 @@ class Robot:
         logging.info("Received reply to move from motors %s" % message)
         
         # if the robot is facing north, update the y coordinate of the robot position
-        if self.dir == directions.NORTH:
+        if self.dir == Direction.NORTH:
             self.pos[1] = self.pos[1] + distance
         # if the robot is facing east, update the x coordinate of the robot position
-        elif self.dir == directions.EAST:
+        elif self.dir == Direction.EAST:
             self.pos[0] = self.pos[0] + distance
         # if the robot is facing south, update the y coordinate of the robot position
-        elif self.dir == directions.SOUTH:
+        elif self.dir == Direction.SOUTH:
             self.pos[1] = self.pos[1] - distance
         # if the robot is facing west, update the x coordinate of the robot position
-        elif self.dir == directions.WEST:
+        elif self.dir == Direction.WEST:
             self.pos[0] = self.pos[0] - distance
 
 
@@ -204,14 +214,14 @@ class Robot:
         message = self.motor_socket.recv()
         logging.info("Received reply to turn from motors %s" % message)
 
-        if self.dir == directions.NORTH:
-            self.dir = directions.WEST
-        elif self.dir == directions.WEST:
-            self.dir = directions.SOUTH
-        elif self.dir == directions.SOUTH:
-            self.dir = directions.EAST
-        elif self.dir == directions.EAST:
-            self.dir = directions.NORTH
+        if self.dir == Direction.NORTH:
+            self.dir = Direction.WEST
+        elif self.dir == Direction.WEST:
+            self.dir = Direction.SOUTH
+        elif self.dir == Direction.SOUTH:
+            self.dir = Direction.EAST
+        elif self.dir == Direction.EAST:
+            self.dir = Direction.NORTH
 
     def turnRight(self):
 
@@ -220,14 +230,14 @@ class Robot:
         message = self.motor_socket.recv()
         logging.info("Received reply to turn from motors %s" % message)
 
-        if self.dir == directions.NORTH:
-            self.dir = directions.EAST
-        elif self.dir == directions.EAST:
-            self.dir = directions.SOUTH
-        elif self.dir == directions.SOUTH:
-            self.dir = directions.WEST
-        elif self.dir == directions.WEST:
-            self.dir = directions.NORTH
+        if self.dir == Direction.NORTH:
+            self.dir = Direction.EAST
+        elif self.dir == Direction.EAST:
+            self.dir = Direction.SOUTH
+        elif self.dir == Direction.SOUTH:
+            self.dir = Direction.WEST
+        elif self.dir == Direction.WEST:
+            self.dir = Direction.NORTH
 
     def getSensorData(self):
         self.sensor_socket.send(b"Q")
