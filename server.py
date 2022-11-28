@@ -25,38 +25,33 @@ class MyWidget(pg.GraphicsLayoutWidget):
 
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.setLayout(self.mainLayout)
-
-        self.timer = QtCore.QTimer(self)
-        self.timer.setInterval(100) # in milliseconds
-        self.timer.start()
-        self.timer.timeout.connect(self.onNewData)
-        # setting title
         self.setWindowTitle("Robot Mapping")
 
         self.x = []
         self.y = []
 
         self.plotItem = self.addPlot(title="Ultrasonic points")
-
         self.plotDataItem = self.plotItem.plot([], pen=None, 
             symbolBrush=(255,0,0), symbolSize=5, symbolPen=None)
 
+        self.timer = QtCore.QTimer(self)
+        self.timer.setInterval(1) # in milliseconds
+        self.timer.start()
+        self.timer.timeout.connect(self.onNewData)
 
     def setData(self, x, y):
         self.plotDataItem.setData(x, y)
 
-
     def onNewData(self):
-        numPoints = 10 
+        # change to sub here where the data is being polled every 100 milliseconds
+        numPoints = 1
         self.x = np.append(self.x, np.random.normal(size=numPoints))
         self.y = np.append(self.y, np.random.normal(size=numPoints))
         self.setData(self.x, self.y)
 
-
 def main():
     app = QtWidgets.QApplication([])
-
-    pg.setConfigOptions(antialias=False) # True seems to work as well
+    pg.setConfigOptions(antialias=False)
 
     win = MyWidget()
     win.show()
