@@ -28,7 +28,6 @@ if __name__ == '__main__':
     # create threads
     logic_thread = threading.Thread(target=logic_main)
     motors_thread = threading.Thread(target=motors_main)
-    #server_thread = threading.Thread(target=server_main, args=(q,))
     sensor_thread = threading.Thread(target=sensor_main)
 
     # start the threads

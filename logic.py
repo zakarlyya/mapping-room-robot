@@ -80,6 +80,8 @@ def logic_main():
         else:
             logging.ERROR("Received unknown start signal from main: %s" % message)
 
+    # FIXME Calibrate the motors here before starting the ultrasonic thread
+
     # poll the start socket for a stop signal, also poll the motor socket for a reply, also poll the sensor socket for sensor data
     poller = zmq.Poller()
     poller.register(start_socket, zmq.POLLIN)
