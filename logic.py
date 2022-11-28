@@ -28,23 +28,20 @@ from enum import Enum
 # Import motor class from motor_class.py
 from motor_class import Motor
 
-class directions(Enum):
+class direction(self):
     NORTH = 1
     EAST = 2
     SOUTH = 3
     WEST = 4
-
-directions = Enum('directions', ['NORTH', 'EAST', 'SOUTH', 'WEST'])
 
 def logic_main():
     
     # Initialize variables
     current_pos = [0,0]
     
-    ## log the value "North has value [directions.NORTH] and type [type(directions.NORTH)]"
-    logging.info("North has value [%s] and type [%s]" % (directions.NORTH, type(directions.NORTH)))
-
-    current_direction = directions.NORTH
+    # inst of class directions
+    directions = direction()
+    current_direction = direction.NORTH
 
     # create a data structure which stores the coordinates of all points visited by the robot
     positions = []  # list of lists
