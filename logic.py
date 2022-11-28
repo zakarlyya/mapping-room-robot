@@ -128,10 +128,7 @@ def logic_main():
 
             # parse the sensor data as [angle], [distance]
             sensor_data = sensor_data.split(",")
-            current_readings.append(sensor_data)
-
-            angle = sensor_data[0]
-            distance = sensor_data[1]
+            current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
 
             # calculate the absolute position of the measured object using the robots current position, 
             # measured angle, and measured distance and then add the location to the positions list
