@@ -29,25 +29,32 @@ class MyWidget(pg.GraphicsLayoutWidget):
 
         self.x = []
         self.y = []
+        self.robotX = []
+        self.robotY = []
 
         self.plotItem = self.addPlot(title="Ultrasonic points")
         self.plotDataItem = self.plotItem.plot([], pen=None, 
             symbolBrush=(255,0,0), symbolSize=5, symbolPen=None)
+        self.plotDataItem2 = self.plotItem.plot([], pen=None, 
+            symbolBrush=(0,255,0), symbolSize=25, symbolPen=None)
 
         self.timer = QtCore.QTimer(self)
-        self.timer.setInterval(1) # in milliseconds
+        self.timer.setInterval(1000) # in milliseconds
         self.timer.start()
         self.timer.timeout.connect(self.onNewData)
 
-    def setData(self, x, y):
+    def setData(self, x, y, robotX, robotY):
         self.plotDataItem.setData(x, y)
+        self.plotDataItem2.setData([robotX], [robotY])
 
     def onNewData(self):
         # change to sub here where the data is being polled every 100 milliseconds
         numPoints = 1
         self.x = np.append(self.x, np.random.normal(size=numPoints))
         self.y = np.append(self.y, np.random.normal(size=numPoints))
-        self.setData(self.x, self.y)
+        self.robotX = np.random.normal()
+        self.robotY = np.random.normal()
+        self.setData(self.x, self.y, self.robotX, self.robotY)
 
 def main():
     app = QtWidgets.QApplication([])
