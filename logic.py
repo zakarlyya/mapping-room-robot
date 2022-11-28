@@ -34,7 +34,7 @@ class directions(Enum):
     SOUTH = 3
     WEST = 4
 
-directions = Enum('directions', 'FORWARD BACKWARD LEFT RIGHT')
+directions = Enum('directions', ['NORTH', 'EAST', 'SOUTH', 'WEST'])
 
 def logic_main():
     
