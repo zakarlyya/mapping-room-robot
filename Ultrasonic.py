@@ -1,5 +1,5 @@
 import time
-from Motor import *
+from motors import *
 import RPi.GPIO as GPIO
 from servo import *
 from PCA9685 import PCA9685
