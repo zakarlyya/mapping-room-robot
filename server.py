@@ -61,18 +61,15 @@ def main():
     robot_ip_address = "192.168.86.227"
     #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
+    socket.subscribe("")
 
-    while True:
-        str = socket.recv_string()
-        print(str)
-
-    # app = QtWidgets.QApplication([])
-    # pg.setConfigOptions(antialias=False)
-    # win = MyWidget(socket)
-    # win.show()
-    # win.resize(800,600) 
-    # win.raise_()
-    # app.exec_()
+    app = QtWidgets.QApplication([])
+    pg.setConfigOptions(antialias=False)
+    win = MyWidget(socket)
+    win.show()
+    win.resize(800,600) 
+    win.raise_()
+    app.exec_()
 
 if __name__ == "__main__":
     main()
