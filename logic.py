@@ -36,8 +36,6 @@ class Direction(Enum):
     SOUTH = 2
     WEST = 3
 
-
-
 def logic_main():
     
     # Initialize variables
@@ -49,13 +47,14 @@ def logic_main():
     # create a data structure which stores the coordinates of all points visited by the robot
     points = []  # list of lists
 
-    # Create a zmq context and socket for REQ/REP with start stop signal from main
+    # Create a zmq context
     context = zmq.Context()
+
+    # create a zmq REQ/REP socket for start or stop signal from main
     start_socket = context.socket(zmq.REP)
     start_socket.bind("tcp://*:5557")
 
     # create a zmq REQ/REP motor_socket to communicate with the motors
-    context = zmq.Context()
     motor_socket = context.socket(zmq.REQ)
     motor_socket.connect("tcp://localhost:5555")
 
@@ -64,6 +63,12 @@ def logic_main():
     sensor_socket.connect("tcp://localhost:5556")
     sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
 
+    # create a zmq PUB/SUB communications_socket to communicate with the server
+    server_socket = context.socket(zmq.PUB)
+    server_socket.bind("tcp://*:5558")
+    time.sleep(5)
+    for i in range(5):
+        server_socket.send("x: %d y: %d" % (i, i))
 
     # create instance of Robot class
     robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)

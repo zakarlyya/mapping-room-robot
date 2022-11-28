@@ -11,16 +11,12 @@ from PyQt5 import QtCore, QtWidgets
 import pyqtgraph as pg
 import numpy as np
 
-# import and set up ZMQ socket
+# import ZMQ for communication
 import zmq
-context = zmq.Context()
-socket = context.socket(zmq.SUB)
-robot_address = "127.0.0.1"
-#socket.connect ("tcp://%s:5557" % robot_address)
 
 class MyWidget(pg.GraphicsLayoutWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, socket, parent=None):
         super().__init__(parent=parent)
 
         self.mainLayout = QtWidgets.QVBoxLayout()
@@ -31,6 +27,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
         self.y = []
         self.robotX = []
         self.robotY = []
+        self.socket = socket
 
         self.plotItem = self.addPlot(title="Ultrasonic points")
         self.plotDataItem = self.plotItem.plot([], pen=None, 
@@ -39,15 +36,17 @@ class MyWidget(pg.GraphicsLayoutWidget):
             symbolBrush=(0,255,0), symbolSize=25, symbolPen=None)
 
         self.timer = QtCore.QTimer(self)
-        self.timer.setInterval(1000) # in milliseconds
+        self.timer.setInterval(100) # in milliseconds
         self.timer.start()
-        self.timer.timeout.connect(self.onNewData)
+        self.timer.timeout.connect(self.getNewData)
 
     def setData(self, x, y, robotX, robotY):
         self.plotDataItem.setData(x, y)
         self.plotDataItem2.setData([robotX], [robotY])
 
-    def onNewData(self):
+    def getNewData(self):
+        str = self.socket.recv()
+        print(str)
         # change to sub here where the data is being polled every 100 milliseconds
         numPoints = 1
         self.x = np.append(self.x, np.random.normal(size=numPoints))
@@ -57,10 +56,14 @@ class MyWidget(pg.GraphicsLayoutWidget):
         self.setData(self.x, self.y, self.robotX, self.robotY)
 
 def main():
+    context = zmq.Context()
+    socket = context.socket(zmq.SUB)
+    robot_ip_address = input("Enter robot IP address: ")
+    socket.connect ("tcp://%s:5558" % robot_ip_address)
+
     app = QtWidgets.QApplication([])
     pg.setConfigOptions(antialias=False)
-
-    win = MyWidget()
+    win = MyWidget(socket)
     win.show()
     win.resize(800,600) 
     win.raise_()
