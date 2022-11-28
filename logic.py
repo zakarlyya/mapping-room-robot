@@ -189,9 +189,6 @@ class Robot:
 
     # Distance is specified in inches
     def moveForward(self, distance):
-        
-        # round distance to nearest integer
-        distance = round(distance)
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
         self.motor_socket.send(b"F" + str(distance).encode())
