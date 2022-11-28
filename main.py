@@ -52,7 +52,7 @@ if __name__ == '__main__':
         else:
             logging.info("Unknown command: %s" % message)
 
-'''
+    '''
     # create REQ/REP socket to communicate with server
     server_context = zmq.Context()
     server_socket = server_context.socket(zmq.REQ)
@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
         # Reply to server
         server_socket.send(b"ACK")
-'''
+    '''
 
     # join threads
     logic_thread.join()
