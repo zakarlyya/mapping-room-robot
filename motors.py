@@ -42,13 +42,13 @@ def motors_main():
             socket.send(b"Moved backward")
         # if the message is turn right, turn the robot right
         elif direction == 'R':
-            motor.setMotorModel(500,500,1500,1500)             # Turn right
+            motor.setMotorModel(-500,-500,1500,1500)             # Turn right
             time.sleep(distance)
             motor.setMotorModel(0,0,0,0)
             socket.send(b"Turned right")
         # if the message is turn left, turn the robot left
         elif direction == 'L':
-            motor.setMotorModel(1500,1500,500,500)             # Turn left
+            motor.setMotorModel(1500,1500,-500,-500)             # Turn left
             time.sleep(distance)
             motor.setMotorModel(0,0,0,0)
             socket.send(b"Turned left")
