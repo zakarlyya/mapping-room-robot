@@ -40,6 +40,10 @@ def logic_main():
     
     # Initialize variables
     current_pos = [0,0]
+    
+    ## log the value "North has value [directions.NORTH] and type [type(directions.NORTH)]"
+    logging.info("North has value [%s] and type [%s]" % (directions.NORTH, type(directions.NORTH)))
+
     current_direction = directions.NORTH
 
     # create a data structure which stores the coordinates of all points visited by the robot
