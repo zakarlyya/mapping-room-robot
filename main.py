@@ -21,6 +21,10 @@ from sensor import sensor_main
 
 
 if __name__ == '__main__':
+
+    # configure logging to display info messages
+    logging.basicConfig(level=logging.INFO, format='(%(threadName)-10s) %(message)s',)
+    
     # create threads
     logic_thread = threading.Thread(target=logic_main)
     motors_thread = threading.Thread(target=motors_main)
@@ -31,9 +35,6 @@ if __name__ == '__main__':
     motors_thread.start()
     logic_thread.start()
     sensor_thread.start()
-
-    # configure logging to display info messages
-    logging.basicConfig(level=logging.INFO, format='(%(threadName)-10s) %(message)s',)
 
     # create REQ zmq socket to send start signal to logic thread
     logic_context = zmq.Context()
@@ -46,7 +47,8 @@ if __name__ == '__main__':
         message = input("Enter START/STOP command: ")
         if message == "START":
             logic_socket.send(b"START")
-            logic_socket.recv()
+            reply = logic_socket.recv()
+            logging.info("Received reply: %s" % reply)
         elif message == "STOP":
             logic_socket.send(b"STOP")
             logic_socket.recv()
