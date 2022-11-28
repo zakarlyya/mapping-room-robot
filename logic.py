@@ -64,7 +64,7 @@ def logic_main():
     sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
 
     # create instance of Robot class
-    robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)
+    robot = Robot(pos=current_pos, dir=current_direction, skt=motor_socket)
 
     # wait for the start signal on start socket
     while True:
@@ -176,7 +176,7 @@ def logic_main():
 
 
 class Robot:
-    def __init__(self, pos, dir, motorsocket):
+    def __init__(self, pos, dir, skt):
         self.pos = pos
         self.dir = dir
 
