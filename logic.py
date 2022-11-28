@@ -63,6 +63,7 @@ def logic_main():
     sensor_socket.connect("tcp://localhost:5556")
     sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
 
+
     # create instance of Robot class
     robot = Robot(pos=current_pos, dir=current_direction, skt=motor_socket)
 
@@ -87,6 +88,10 @@ def logic_main():
     mapping_done = False
     # Create a ready_to_move flag
     ready_to_move = True
+
+    # Log that we are beginning mapping
+    logging.info("Beginning mapping")
+
     robot.moveForward(0.1)
 
     # until the robot receieves a STOP signal from start socket or mapping_done flag is set, loop

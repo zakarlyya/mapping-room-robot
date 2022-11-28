@@ -30,9 +30,10 @@ if __name__ == '__main__':
     # start the threads
     motors_thread.start()
     logic_thread.start()
+    sensor_thread.start()
 
     # configure logging to display info messages
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, format='(%(threadName)-10s) %(message)s',)
 
     # create REQ zmq socket to send start signal to logic thread
     logic_context = zmq.Context()
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     # while true wait for terminal input, if the input is "START" send a start signal to the logic thread
     # if the input is "STOP" send a stop signal to the logic thread
     while True:
-        message = input("Enter a command: ")
+        message = input("Enter START/STOP command: ")
         if message == "START":
             logic_socket.send(b"START")
             logic_socket.recv()
@@ -79,7 +80,8 @@ if __name__ == '__main__':
     # join threads
     logic_thread.join()
     motors_thread.join()
+    sensor_thread.join()
 
     # close sockets
-    server_socket.close()
+    # server_socket.close()
     logic_socket.close()
