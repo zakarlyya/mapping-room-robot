@@ -24,37 +24,61 @@ if __name__ == '__main__':
     logic_thread = threading.Thread(target=logic_main, args=(q,))
     motors_thread = threading.Thread(target=motors_main, args=(q,))
     #server_thread = threading.Thread(target=server_main, args=(q,))
-    #sensor_thread = threading.Thread(target=sensor_main, args=(q,))
+    sensor_thread = threading.Thread(target=sensor_main, args=(q,))
 
     # start the threads
     motors_thread.start()
     logic_thread.start()
 
+    # configure logging to display info messages
+    logging.basicConfig(level=logging.INFO)
 
+    # create REQ zmq socket to send start signal to logic thread
+    logic_context = zmq.Context()
+    logic_socket = logic_context.socket(zmq.REQ)
+    logic_socket.connect("tcp://localhost:5557")
+
+    # while true wait for terminal input, if the input is "START" send a start signal to the logic thread
+    # if the input is "STOP" send a stop signal to the logic thread
+    while True:
+        message = input("Enter a command: ")
+        if message == "START":
+            logic_socket.send(b"START")
+            logic_socket.recv()
+        elif message == "STOP":
+            logic_socket.send(b"STOP")
+            logic_socket.recv()
+            break
+        else:
+            logging.info("Unknown command: %s" % message)
+
+'''
     # create REQ/REP socket to communicate with server
     server_context = zmq.Context()
     server_socket = server_context.socket(zmq.REQ)
     server_socket.connect("tcp://localhost:5558")
-
-    # create REQ zmq socket to send start signal to logic thread
-    start_context = zmq.Context()
-    start_socket = start_context.socket(zmq.REQ)
-    start_socket.connect("tcp://localhost:5557")
 
     # wait for server to send message to start then send start signal to logic thread
     while True:
         message = server_socket.recv()
         logging.info("Received start signal from server: %s" % message)
         if message == b"START":
-            start_socket.send(b"START")
-            start_socket.recv()
+            logic_socket.send(b"START")
+            logic_socket.recv()
             break
         if message == b"STOP":
-            start_socket.send(b"STOP")
-            start_socket.recv()
+            logic_socket.send(b"STOP")
+            logic_socket.recv()
             break
+
+        # Reply to server
+        server_socket.send(b"ACK")
+'''
 
     # join threads
     logic_thread.join()
     motors_thread.join()
 
+    # close sockets
+    server_socket.close()
+    logic_socket.close()
