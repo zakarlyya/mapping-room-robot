@@ -68,7 +68,7 @@ def logic_main():
     server_socket.bind("tcp://*:5558")
     time.sleep(5)
     for i in range(5):
-        server_socket.send("x: %d y: %d" % (i, i))
+        server_socket.send_string("x: %d y: %d" % (i, i))
 
     # create instance of Robot class
     robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)

@@ -45,7 +45,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
         self.plotDataItem2.setData([robotX], [robotY])
 
     def getNewData(self):
-        str = self.socket.recv()
+        str = self.socket.recv_string()
         print(str)
         # change to sub here where the data is being polled every 100 milliseconds
         numPoints = 1
