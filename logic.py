@@ -46,7 +46,7 @@ def logic_main():
     current_direction = Direction.NORTH
 
     # create a data structure which stores the coordinates of all points visited by the robot
-    positions = []  # list of lists
+    points = []  # list of lists
 
     # Create a zmq context and socket for REQ/REP with start stop signal from main
     context = zmq.Context()
@@ -132,6 +132,7 @@ def logic_main():
 
             # calculate the absolute position of the measured object using the robots current position, 
             # measured angle, and measured distance and then add the location to the positions list
+            points.append(robot.calculateAbsolutePosition(current_readings[0][0], current_readings[0][1]))
 
         # if the robot is ready to move, move it
         if ready_to_move:
@@ -243,3 +244,15 @@ class Robot:
     
     def getDir(self):
         return self.dir
+
+    def calculateAbsolutePosition(self, angle, distance):
+        # calculate the absolute position of the measured object using the robots current position, 
+        # measured angle, and measured distance and then add the location to the positions list
+        if self.dir == Direction.NORTH:
+            return [self.pos[0] + distance * math.sin(math.radians(angle)), self.pos[1] + distance * math.cos(math.radians(angle))]
+        elif self.dir == Direction.EAST:
+            return [self.pos[0] + distance * math.cos(math.radians(angle)), self.pos[1] - distance * math.sin(math.radians(angle))]
+        elif self.dir == Direction.SOUTH:
+            return [self.pos[0] - distance * math.sin(math.radians(angle)), self.pos[1] - distance * math.cos(math.radians(angle))]
+        elif self.dir == Direction.WEST:
+            return [self.pos[0] - distance * math.cos(math.radians(angle)), self.pos[1] + distance * math.sin(math.radians(angle))]
