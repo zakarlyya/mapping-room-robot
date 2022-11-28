@@ -184,7 +184,7 @@ class Robot:
     def __init__(self, pos, dir, motor_socket):
         self.pos = pos
         self.dir = dir
-
+        self.motor_socket = motor_socket
         motor = Motor()
 
     # Distance is specified in inches
