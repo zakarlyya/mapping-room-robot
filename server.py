@@ -58,16 +58,21 @@ class MyWidget(pg.GraphicsLayoutWidget):
 def main():
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    robot_ip_address = input("Enter robot IP address: ")
+    robot_ip_address = "192.168.86.227"
+    #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
 
-    app = QtWidgets.QApplication([])
-    pg.setConfigOptions(antialias=False)
-    win = MyWidget(socket)
-    win.show()
-    win.resize(800,600) 
-    win.raise_()
-    app.exec_()
+    while True:
+        str = socket.recv_string()
+        print(str)
+
+    # app = QtWidgets.QApplication([])
+    # pg.setConfigOptions(antialias=False)
+    # win = MyWidget(socket)
+    # win.show()
+    # win.resize(800,600) 
+    # win.raise_()
+    # app.exec_()
 
 if __name__ == "__main__":
     main()

@@ -66,9 +66,6 @@ def logic_main():
     # create a zmq PUB/SUB communications_socket to communicate with the server
     server_socket = context.socket(zmq.PUB)
     server_socket.bind("tcp://*:5558")
-    time.sleep(5)
-    for i in range(5):
-        server_socket.send_string("x: %d y: %d" % (i, i))
 
     # create instance of Robot class
     robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)
@@ -134,6 +131,8 @@ def logic_main():
             sensor_data = sensor_socket.recv_string()
 
             logging.info("Received sensor data: %s" % sensor_data)
+            
+            server_socket.send_string(sensor_data)
 
             # parse the sensor data as [angle], [distance]
             sensor_data = sensor_data.split(",")
