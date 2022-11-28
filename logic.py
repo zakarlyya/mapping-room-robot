@@ -29,10 +29,10 @@ from enum import Enum
 from motor_class import Motor
 
 class directions(Enum):
-    FORWARD = 1
-    BACKWARD = 2
-    LEFT = 3
-    RIGHT = 4
+    NORTH = 1
+    EAST = 2
+    SOUTH = 3
+    WEST = 4
 
 directions = Enum('directions', 'FORWARD BACKWARD LEFT RIGHT')
 
