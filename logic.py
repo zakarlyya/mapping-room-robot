@@ -65,7 +65,7 @@ def logic_main():
 
 
     # create instance of Robot class
-    robot = Robot(pos=current_pos, dir=current_direction, skt=motor_socket)
+    robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)
 
     # wait for the start signal on start socket
     while True:
@@ -181,7 +181,7 @@ def logic_main():
 
 
 class Robot:
-    def __init__(self, pos, dir, skt):
+    def __init__(self, pos, dir, motor_socket):
         self.pos = pos
         self.dir = dir
 
@@ -243,14 +243,6 @@ class Robot:
             self.dir = Direction.WEST
         elif self.dir == Direction.WEST:
             self.dir = Direction.NORTH
-
-    def getSensorData(self):
-        self.sensor_socket.send(b"Q")
-        message = self.sensor_socket.recv()
-        return message
-
-    def storeSensorData(self, data):
-        self.sensor_data.append(data)
 
     def getPos(self):
         return self.pos
