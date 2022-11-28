@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     # configure logging to display info messages
     logging.basicConfig(level=logging.INFO, format='(%(threadName)-10s) %(message)s',)
-    
+
     # create threads
     logic_thread = threading.Thread(target=logic_main)
     motors_thread = threading.Thread(target=motors_main)
@@ -49,6 +49,7 @@ if __name__ == '__main__':
             logic_socket.send(b"START")
             reply = logic_socket.recv()
             logging.info("Received reply: %s" % reply)
+            break
         elif message == "STOP":
             logic_socket.send(b"STOP")
             logic_socket.recv()
