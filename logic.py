@@ -24,6 +24,10 @@ import time
 import queue
 import zmq
 
+from Ultrasonic import *
+from servo import *
+from sensor import sensor_main
+
 from enum import Enum
 
 # Import motor class from motor_class.py
@@ -95,6 +99,13 @@ def logic_main():
     ready_to_move = True
 
     net_num_left_turns = 0
+
+    robot.calibrateMotors()
+
+    # turn left
+
+    sensor_thread.start()
+    sensor_thread = threading.Thread(target=sensor_main)
 
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
@@ -199,6 +210,22 @@ class Robot:
         motor = Motor()
 
     def calibrateMotors(self):
+        pwm=Servo()
+        ultrasonic=Ultrasonic()   
+        pwm.setServoPwm('0', 90)
+        pwm.setServoPwm('1', 92)
+        
+        distance = 0
+        for i in range(10):
+            distance = distance + ultrasonic.get_distance()/10
+
+        self.moveForward(self, 1)
+
+        new_distance = 0
+        for i in range(10):
+            new_distance = new_distance + ultrasonic.get_distance()/10
+
+        self.velocity = distance - new_distance
         return
 
     # Distance is specified in inches
@@ -208,7 +235,7 @@ class Robot:
         self.motor_socket.send(b"F" + str(distance).encode())
         message = self.motor_socket.recv()
         logging.info("Received reply to move from motors %s" % message)
-        
+
         distance = time * self.velocity
 
         # if the robot is facing north, update the y coordinate of the robot position
