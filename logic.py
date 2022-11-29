@@ -194,20 +194,26 @@ class Robot:
     def __init__(self, pos, dir, motor_socket):
         self.pos = pos
         self.dir = dir
+        self.velocity = 1
         self.motor_socket = motor_socket
         motor = Motor()
 
+    def calibrateMotors(self):
+        return
+
     # Distance is specified in inches
-    def moveForward(self, distance):
+    def moveForward(self, time):
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
         self.motor_socket.send(b"F" + str(distance).encode())
         message = self.motor_socket.recv()
         logging.info("Received reply to move from motors %s" % message)
         
+        distance = time * self.velocity
+
         # if the robot is facing north, update the y coordinate of the robot position
         if self.dir == Direction.NORTH:
-            self.pos[1] = self.pos[1] + distance
+            self.pos[1] = self.pos[1] + distance 
         # if the robot is facing east, update the x coordinate of the robot position
         elif self.dir == Direction.EAST:
             self.pos[0] = self.pos[0] + distance
