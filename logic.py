@@ -68,8 +68,8 @@ def logic_main():
 
     # FIXME turn left
 
-    sensor_thread.start()
     sensor_thread = threading.Thread(target=sensor_main)
+    sensor_thread.start()
 
     # create a zmq PUB/SUB sensor_socket to communicate with the sensors
     sensor_socket = context.socket(zmq.SUB)
