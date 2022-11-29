@@ -78,7 +78,9 @@ def logic_main():
     
     # create instance of Robot class
     robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)
-    robot.calibrateMotors()
+    vel = robot.calibrateMotors()
+
+    logging.info("Calibrated motors. Calculated velocity: %s" % vel)
 
     # FIXME turn left
 
@@ -89,7 +91,7 @@ def logic_main():
     sensor_socket = context.socket(zmq.SUB)
     sensor_socket.connect("tcp://localhost:5556")
     sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
-    
+
     # poll the start socket for a stop signal, also poll the motor socket for a reply, also poll the sensor socket for sensor data
     poller = zmq.Poller()
     poller.register(start_socket, zmq.POLLIN)
@@ -105,8 +107,6 @@ def logic_main():
 
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
-
-    robot.moveForward(0.1)
 
     # until the robot receieves a STOP signal from start socket or mapping_done flag is set, loop
     while not mapping_done:
@@ -208,8 +208,12 @@ class Robot:
     def calibrateMotors(self):
         pwm=Servo()
         ultrasonic=Ultrasonic()   
-        pwm.setServoPwm('0', 90)
-        pwm.setServoPwm('1', 92)
+
+        # Set servo to 0 degrees (we want to be facing in the direction of the wall)
+        # FIXME
+
+        #pwm.setServoPwm('0', 90)
+        #pwm.setServoPwm('1', 92)
         
         distance = 0
         for i in range(10):
@@ -222,7 +226,7 @@ class Robot:
             new_distance = new_distance + ultrasonic.get_distance()/10
 
         self.velocity = distance - new_distance
-        return
+        return self.velocity
 
     # Distance is specified in inches
     def moveForward(self, time):
