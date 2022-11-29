@@ -43,7 +43,7 @@ class Direction(Enum):
 def logic_main():
     
     # Initialize variables
-    current_pos = (0,0)
+    current_pos = [0, 0]
     
     # use direction enum to set current_direction to NROTH
     current_direction = Direction.EAST
