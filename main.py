@@ -16,9 +16,6 @@ import zmq
 from logic import logic_main
 # import motors.py
 from motors import motors_main
-# import sensor.py
-from sensor import sensor_main
-
 
 if __name__ == '__main__':
 
@@ -28,12 +25,10 @@ if __name__ == '__main__':
     # create threads
     logic_thread = threading.Thread(target=logic_main)
     motors_thread = threading.Thread(target=motors_main)
-    sensor_thread = threading.Thread(target=sensor_main)
 
     # start the threads
     motors_thread.start()
     logic_thread.start()
-    sensor_thread.start()
 
     # create REQ zmq socket to send start signal to logic thread
     logic_context = zmq.Context()
@@ -82,7 +77,6 @@ if __name__ == '__main__':
     # join threads
     logic_thread.join()
     motors_thread.join()
-    sensor_thread.join()
 
     # close sockets
     # server_socket.close()
