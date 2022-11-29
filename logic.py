@@ -129,11 +129,11 @@ def logic_main():
             else:
                 logging.ERROR("Received unknown stop signal from main: %s" % message)
 
-        if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
-            # if the motor socket has a reply, update positional data
-            motor_movement = motor_socket.recv()
-            ready_to_move = True
-            logging.info("Received motor reply: %s" % motor_movement)
+        # if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
+        #     # if the motor socket has a reply, update positional data
+        #     motor_movement = motor_socket.recv()
+        #     ready_to_move = True
+        #     logging.info("Received motor reply: %s" % motor_movement)
 
         while sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN:
             sensor_data = sensor_socket.recv_string()
