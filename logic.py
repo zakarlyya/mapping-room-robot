@@ -228,7 +228,7 @@ class Robot:
     def moveForward(self, time):
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
-        self.motor_socket.send(b"F" + str(distance).encode())
+        self.motor_socket.send(b"F" + str(time).encode())
         message = self.motor_socket.recv()
         logging.info("Received reply to move from motors %s" % message)
 
