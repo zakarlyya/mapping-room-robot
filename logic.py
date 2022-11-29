@@ -208,12 +208,6 @@ class Robot:
     def calibrateMotors(self):
         pwm=Servo()
         ultrasonic=Ultrasonic()   
-
-        # Set servo to 0 degrees (we want to be facing in the direction of the wall)
-        # FIXME
-
-        #pwm.setServoPwm('0', 90)
-        #pwm.setServoPwm('1', 92)
         
         distance = 0
         for i in range(10):
