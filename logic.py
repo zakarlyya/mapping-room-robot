@@ -43,10 +43,10 @@ class Direction(Enum):
 def logic_main():
     
     # Initialize variables
-    current_pos = [0,0]
+    current_pos = (0,0)
     
     # use direction enum to set current_direction to NROTH
-    current_direction = Direction.NORTH
+    current_direction = Direction.EAST
 
     # create a data structure which stores the coordinates of all points visited by the robot
     points = []  # list of lists
@@ -61,6 +61,15 @@ def logic_main():
     # create a zmq REQ/REP motor_socket to communicate with the motors
     motor_socket = context.socket(zmq.REQ)
     motor_socket.connect("tcp://localhost:5555")
+    
+    # create instance of Robot class
+    robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)
+    robot.calibrateMotors()
+
+    # FIXME turn left
+
+    sensor_thread.start()
+    sensor_thread = threading.Thread(target=sensor_main)
 
     # create a zmq PUB/SUB sensor_socket to communicate with the sensors
     sensor_socket = context.socket(zmq.SUB)
@@ -71,9 +80,6 @@ def logic_main():
     server_socket = context.socket(zmq.PUB)
     server_socket.bind("tcp://*:5558")
 
-    # create instance of Robot class
-    robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)
-
     # wait for the start signal on start socket
     while True:
         message = start_socket.recv()
@@ -83,8 +89,6 @@ def logic_main():
             break
         else:
             logging.ERROR("Received unknown start signal from main: %s" % message)
-
-    # FIXME Calibrate the motors here before starting the ultrasonic thread
 
     # poll the start socket for a stop signal, also poll the motor socket for a reply, also poll the sensor socket for sensor data
     poller = zmq.Poller()
@@ -97,15 +101,8 @@ def logic_main():
     mapping_done = False
     # Create a ready_to_move flag
     ready_to_move = True
-
+    # Set net number of turns to track where in room
     net_num_left_turns = 0
-
-    robot.calibrateMotors()
-
-    # turn left
-
-    sensor_thread.start()
-    sensor_thread = threading.Thread(target=sensor_main)
 
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
@@ -151,7 +148,7 @@ def logic_main():
 
             # calculate the absolute position of the measured object using the robots current position,
             # measured angle, and measured distance and then add the location to the positions list
-            point = robot.calculateAbsolutePosition(current_readings[0][0], current_readings[0][1])
+            point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
             points.append(point)
             server_socket.send_string(str(point))
 
