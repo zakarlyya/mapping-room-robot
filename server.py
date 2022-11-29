@@ -36,7 +36,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
             symbolBrush=(0,255,0), symbolSize=25, symbolPen=None)
 
         self.timer = QtCore.QTimer(self)
-        self.timer.setInterval(100) # in milliseconds
+        self.timer.setInterval(10) # in milliseconds
         self.timer.start()
         self.timer.timeout.connect(self.getNewData)
 
