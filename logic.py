@@ -215,7 +215,7 @@ class Robot:
         for i in range(10):
             distance = distance + ultrasonic.get_distance()/10
 
-        self.moveForward(self, 1)
+        self.moveForward(1)
 
         new_distance = 0
         for i in range(10):
