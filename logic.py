@@ -82,7 +82,7 @@ def logic_main():
 
     logging.info("Calibrated motors. Calculated velocity: %s" % vel)
 
-    robot.turnLeft()
+    # robot.turnLeft()
 
     sensor_thread = threading.Thread(target=sensor_main)
     sensor_thread.start()
