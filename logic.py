@@ -58,6 +58,20 @@ def logic_main():
     start_socket = context.socket(zmq.REP)
     start_socket.bind("tcp://*:5557")
 
+    # create a zmq PUB/SUB communications_socket to communicate with the server
+    server_socket = context.socket(zmq.PUB)
+    server_socket.bind("tcp://*:5558")
+
+    # wait for the start signal on start socket
+    while True:
+        message = start_socket.recv()
+        if message == b"START":
+            start_socket.send(b"Starting")
+            logging.info("Received start signal from main")
+            break
+        else:
+            logging.ERROR("Received unknown start signal from main: %s" % message)
+
     # create a zmq REQ/REP motor_socket to communicate with the motors
     motor_socket = context.socket(zmq.REQ)
     motor_socket.connect("tcp://localhost:5555")
@@ -75,21 +89,7 @@ def logic_main():
     sensor_socket = context.socket(zmq.SUB)
     sensor_socket.connect("tcp://localhost:5556")
     sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
-
-    # create a zmq PUB/SUB communications_socket to communicate with the server
-    server_socket = context.socket(zmq.PUB)
-    server_socket.bind("tcp://*:5558")
-
-    # wait for the start signal on start socket
-    while True:
-        message = start_socket.recv()
-        if message == b"START":
-            start_socket.send(b"Starting")
-            logging.info("Received start signal from main")
-            break
-        else:
-            logging.ERROR("Received unknown start signal from main: %s" % message)
-
+    
     # poll the start socket for a stop signal, also poll the motor socket for a reply, also poll the sensor socket for sensor data
     poller = zmq.Poller()
     poller.register(start_socket, zmq.POLLIN)
