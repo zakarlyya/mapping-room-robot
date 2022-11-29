@@ -177,14 +177,14 @@ def logic_main():
                 continue
 
             # check the votes and move the robot accordingly
-            if vote_forward > vote_left and vote_forward > vote_right:
+            if vote_forward > vote_left and vote_forward > vote_right and vote_forward > 3:
                 # if there is no object in front of the robot and there is a wall on the right, then go forward
                 robot.moveForward(0.1)
-            elif vote_left > vote_forward and vote_left > vote_right:
+            elif vote_left > vote_forward and vote_left > vote_right and vote_forward > 3:
                 # if there is an object in front of the robot and to the right, then turn left
                 robot.turnLeft()
                 net_num_left_turns += 1
-            elif vote_right > vote_forward and vote_right > vote_left:
+            elif vote_right > vote_forward and vote_right > vote_left and vote_forward > 3:
                 # if there is no object in front of the robot and there is no wall on the right, then turn right
                 robot.turnRight()
                 net_num_left_turns -= 1
