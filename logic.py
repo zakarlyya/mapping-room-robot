@@ -95,7 +95,6 @@ def logic_main():
     poller.register(start_socket, zmq.POLLIN)
     poller.register(motor_socket, zmq.POLLIN)
     poller.register(sensor_socket, zmq.POLLIN)
-    socks = dict(poller.poll())
 
     # create a mapping_done flag
     mapping_done = False
@@ -111,8 +110,8 @@ def logic_main():
 
     # until the robot receieves a STOP signal from start socket or mapping_done flag is set, loop
     while not mapping_done:
-
-        current_readings = [] # list of sensor readings
+        current_readings = []           # list of sensor readings
+        socks = dict(poller.poll())
 
         # mapping_done if robot net_num_left_turns is 4
         if net_num_left_turns == 4:
@@ -130,14 +129,13 @@ def logic_main():
             else:
                 logging.ERROR("Received unknown stop signal from main: %s" % message)
 
-        elif motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
+        if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
             # if the motor socket has a reply, update positional data
             motor_movement = motor_socket.recv()
             ready_to_move = True
             logging.info("Received motor reply: %s" % motor_movement)
 
-        elif sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN:
-            
+        while sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN:
             sensor_data = sensor_socket.recv_string()
 
             logging.info("Received sensor data: %s" % sensor_data)
@@ -151,6 +149,8 @@ def logic_main():
             point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
             points.append(point)
             server_socket.send_string(str(point))
+            
+            socks = dict(poller.poll())
 
         # if the robot is ready to move, move it
         if ready_to_move:
@@ -163,13 +163,13 @@ def logic_main():
             # iterate through all the data in the current sensor data list
             for data in current_readings:
                 isData = 1
-                # if a measurement is made at > 110º we know we are not turning right
-                if data[0] > 110 and data[0]:
-                    vote_right -= 1
-                if 70 < data[0] < 110:
-                    vote_forward -= 1
-                if data[0] < 70:
-                    vote_left -= 1
+                # if a measurement is made on the right 
+                if data[0] < -70 and data[1] < 20:
+                    vote_right += 1
+                if -20 < data[0] < 20 and data[1] > 20:
+                    vote_forward += 1
+                if -20 < data[0] < 20 and data[1] < 20:
+                    vote_left += 1
                 
             # if there is no data, move forward
             if isData == 0:
@@ -178,20 +178,19 @@ def logic_main():
 
             # check the votes and move the robot accordingly
             if vote_forward > vote_left and vote_forward > vote_right:
+                # if there is no object in front of the robot and there is a wall on the right, then go forward
                 robot.moveForward(0.1)
             elif vote_left > vote_forward and vote_left > vote_right:
+                # if there is an object in front of the robot and to the right, then turn left
                 robot.turnLeft()
                 net_num_left_turns += 1
             elif vote_right > vote_forward and vote_right > vote_left:
+                # if there is no object in front of the robot and there is no wall on the right, then turn right
                 robot.turnRight()
                 net_num_left_turns -= 1
             else:
                 logging.error("No clear vote for next move, robot will move forward slightly")
                 robot.moveForward(0.1)
-
-            # if there is an object in front of the robot within one robot's length and to the right, turn left
-
-            # if there is no object in front or right, move forward and turn right until it detects an object on the right
 
             ready_to_move = False
             
