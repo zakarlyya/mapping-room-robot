@@ -215,7 +215,7 @@ class Robot:
         for i in range(10):
             distance = distance + ultrasonic.get_distance()/10
 
-        self.moveForward(self, 1)
+        self.moveForward(1)
 
         new_distance = 0
         for i in range(10):
@@ -228,7 +228,7 @@ class Robot:
     def moveForward(self, time):
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
-        self.motor_socket.send(b"F" + str(distance).encode())
+        self.motor_socket.send(b"F" + str(time).encode())
         message = self.motor_socket.recv()
         logging.info("Received reply to move from motors %s" % message)
 
