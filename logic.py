@@ -151,7 +151,7 @@ def logic_main():
                 # measured angle, and measured distance and then add the location to the positions list
                 point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
                 points.append(point)
-                logging.info("Calculated absolute position of point as: %s" % point)
+                logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
                 server_socket.send_string("{}, {},point".format(point[0], point[1]))
             
             socks = dict(poller.poll())
@@ -174,37 +174,39 @@ def logic_main():
             for data in current_readings:
                 isData = 1
                 # if a measurement is made on the right 
-                if data[0] < -70 and data[1] < 20:
+                if data[0] < -70 and data[1] < 10:
                     vote_right += 1
-                if -20 < data[0] < 20 and data[1] > 20:
+                    logging.info("Voted right")
+                elif -20 < data[0] < 20 and data[1] > 10:
                     vote_forward += 1
-                if -20 < data[0] < 20 and data[1] < 20:
+                    logging.info("Voted forward")
+                else:
                     vote_left += 1
+                    logging.info("Voted left")
                 
             # if there is no data, move forward
             if isData == 0:
                 logging.error("No data retrieved from sensors... Waiting for next clock cycle to make a move")
-                continue
-
-            # check the votes and move the robot accordingly
-            if vote_forward > vote_left and vote_forward > vote_right and vote_forward > 3:
-                # if there is no object in front of the robot and there is a wall on the right, then go forward
-                robot.moveForward(0.1)
-            elif vote_left > vote_forward and vote_left > vote_right and vote_left > 3:
-                # if there is an object in front of the robot and to the right, then turn left
-                robot.turnLeft()
-                net_num_left_turns += 1
-            elif vote_right > vote_forward and vote_right > vote_left and vote_right > 3:
-                # if there is no object in front of the robot and there is no wall on the right, then turn right
-                robot.turnRight()
-                net_num_left_turns -= 1
             else:
-                logging.error("No clear vote for next move, robot will move forward slightly")
-                robot.moveForward(0.1)
+                # check the votes and move the robot accordingly
+                if vote_forward > vote_left and vote_forward > vote_right and vote_forward > 3:
+                    # if there is no object in front of the robot and there is a wall on the right, then go forward
+                    robot.moveForward(0.1)
+                elif vote_left > vote_forward and vote_left > vote_right and vote_left > 3:
+                    # if there is an object in front of the robot and to the right, then turn left
+                    robot.turnLeft()
+                    net_num_left_turns += 1
+                elif vote_right > vote_forward and vote_right > vote_left and vote_right > 3:
+                    # if there is no object in front of the robot and there is no wall on the right, then turn right
+                    robot.turnRight()
+                    net_num_left_turns -= 1
+                else:
+                    logging.error("No clear vote for next move, robot will move forward slightly")
+                    robot.moveForward(0.1)
 
-            server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
-            current_readings = []
-            ready_to_move = False
+                server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
+                current_readings = []
+                ready_to_move = False
             
 
 
