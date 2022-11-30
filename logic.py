@@ -81,7 +81,6 @@ def logic_main():
 
     logging.info("Calibrated motors. Calculated velocity: %s" % vel)
 
-
     # Wait for go from main
     start_socket.send(b"GO")
     message = start_socket.recv()
@@ -89,8 +88,9 @@ def logic_main():
         start_socket.send(b"Ack")
         logging.info("Received go signal from main")
 
+    # FIXME move forward until robot is certain distance away from wall
 
-    # robot.turnLeft()
+    robot.turnLeft()
 
     sensor_thread = threading.Thread(target=sensor_main)
     sensor_thread.start()
@@ -103,7 +103,6 @@ def logic_main():
     # poll the start socket for a stop signal, also poll the motor socket for a reply, also poll the sensor socket for sensor data
     poller = zmq.Poller()
     poller.register(start_socket, zmq.POLLIN)
-    poller.register(motor_socket, zmq.POLLIN)
     poller.register(sensor_socket, zmq.POLLIN)
 
     # create a mapping_done flag
@@ -125,7 +124,6 @@ def logic_main():
         if net_num_left_turns == 4:
             mapping_done = True
             logging.info("Mapping complete")
-            continue
 
         # if the start socket has a stop signal, mapping_done is true
         if start_socket in socks and socks[start_socket] == zmq.POLLIN:
@@ -136,12 +134,6 @@ def logic_main():
                 break
             else:
                 logging.ERROR("Received unknown stop signal from main: %s" % message)
-
-        # if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
-        #     # if the motor socket has a reply, update positional data
-        #     motor_movement = motor_socket.recv()
-        #     ready_to_move = True
-        #     logging.info("Received motor reply: %s" % motor_movement)
 
         while sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN:
             sensor_data = sensor_socket.recv_string()
@@ -188,11 +180,11 @@ def logic_main():
             if vote_forward > vote_left and vote_forward > vote_right and vote_forward > 3:
                 # if there is no object in front of the robot and there is a wall on the right, then go forward
                 robot.moveForward(0.1)
-            elif vote_left > vote_forward and vote_left > vote_right and vote_forward > 3:
+            elif vote_left > vote_forward and vote_left > vote_right and vote_left > 3:
                 # if there is an object in front of the robot and to the right, then turn left
                 robot.turnLeft()
                 net_num_left_turns += 1
-            elif vote_right > vote_forward and vote_right > vote_left and vote_forward > 3:
+            elif vote_right > vote_forward and vote_right > vote_left and vote_right > 3:
                 # if there is no object in front of the robot and there is no wall on the right, then turn right
                 robot.turnRight()
                 net_num_left_turns -= 1
@@ -202,7 +194,6 @@ def logic_main():
 
             ready_to_move = False
             
-
 
 
 class Robot:
