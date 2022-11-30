@@ -47,7 +47,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
     def getNewData(self):
         str = self.socket.recv_string()
         data = str.split(",")
-        # print(data)
+        print(data)
 
         if(data[2] == "point"):
             self.x = np.append(self.x, float(data[0]))
