@@ -209,6 +209,8 @@ class Robot:
         pwm=Servo()
         ultrasonic=Ultrasonic()   
         
+        time.sleep(1)
+
         distance = 0
         for i in range(10):
             distance = distance + ultrasonic.get_distance()/10
