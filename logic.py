@@ -58,10 +58,6 @@ def logic_main():
     start_socket = context.socket(zmq.REP)
     start_socket.bind("tcp://*:5557")
 
-    # create a zmq PUB/SUB communications_socket to communicate with the server
-    server_socket = context.socket(zmq.PUB)
-    server_socket.bind("tcp://*:5558")
-
     # wait for the start signal on start socket
     while True:
         message = start_socket.recv()
@@ -100,6 +96,10 @@ def logic_main():
     sensor_socket.connect("tcp://localhost:5556")
     sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
 
+    # create a zmq PUB/SUB communications_socket to communicate with the server
+    server_socket = context.socket(zmq.PUB)
+    server_socket.bind("tcp://*:5558")
+
     # poll the start socket for a stop signal, also poll the motor socket for a reply, also poll the sensor socket for sensor data
     poller = zmq.Poller()
     poller.register(start_socket, zmq.POLLIN)
@@ -116,9 +116,10 @@ def logic_main():
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
 
+    current_readings = []           # list of sensor readings
+
     # until the robot receieves a STOP signal from start socket or mapping_done flag is set, loop
     while not mapping_done:
-        current_readings = []           # list of sensor readings
         socks = dict(poller.poll())
 
         # mapping_done if robot net_num_left_turns is 4
@@ -143,20 +144,27 @@ def logic_main():
 
             # parse the sensor data as [angle], [distance]
             sensor_data = sensor_data.split(",")
-            current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
+            if(float(sensor_data[1]) < 30):
+                current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
 
-            # calculate the absolute position of the measured object using the robots current position,
-            # measured angle, and measured distance and then add the location to the positions list
-            point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
-            points.append(point)
-            logging.info("Calculated absolute position of point as: %s" % point)
-            server_socket.send_string("{}, {},point".format(point[0], point[1]))
+                # calculate the absolute position of the measured object using the robots current position,
+                # measured angle, and measured distance and then add the location to the positions list
+                point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
+                points.append(point)
+                logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
+                server_socket.send_string("{}, {},point".format(point[0], point[1]))
             
             socks = dict(poller.poll())
 
+        # if motor_socket has a reply, set ready_to_move to true
+        if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
+            message = motor_socket.recv()
+            logging.info("IN POLLER: Received motor reply %s" % message)
+            ready_to_move = True
+
         # if the robot is ready to move, move it
         if ready_to_move:
-            logging.DEBUG("Robot is ready to move")
+            logging.info("Robot is ready to move")
             # In an effort to remove erroneous data points, each sensor reading is used as a "vote" for the next move
             vote_forward = 0
             vote_left = 0
@@ -166,36 +174,39 @@ def logic_main():
             for data in current_readings:
                 isData = 1
                 # if a measurement is made on the right 
-                if data[0] < -70 and data[1] < 20:
+                if data[0] < -70 and data[1] < 10:
                     vote_right += 1
-                if -20 < data[0] < 20 and data[1] > 20:
+                    logging.info("Voted right")
+                elif -20 < data[0] < 20 and data[1] > 10:
                     vote_forward += 1
-                if -20 < data[0] < 20 and data[1] < 20:
+                    logging.info("Voted forward")
+                else:
                     vote_left += 1
+                    logging.info("Voted left")
                 
             # if there is no data, move forward
             if isData == 0:
                 logging.error("No data retrieved from sensors... Waiting for next clock cycle to make a move")
-                continue
-
-            # check the votes and move the robot accordingly
-            if vote_forward > vote_left and vote_forward > vote_right and vote_forward > 3:
-                # if there is no object in front of the robot and there is a wall on the right, then go forward
-                robot.moveForward(0.1)
-            elif vote_left > vote_forward and vote_left > vote_right and vote_left > 3:
-                # if there is an object in front of the robot and to the right, then turn left
-                robot.turnLeft()
-                net_num_left_turns += 1
-            elif vote_right > vote_forward and vote_right > vote_left and vote_right > 3:
-                # if there is no object in front of the robot and there is no wall on the right, then turn right
-                robot.turnRight()
-                net_num_left_turns -= 1
             else:
-                logging.error("No clear vote for next move, robot will move forward slightly")
-                robot.moveForward(0.1)
+                # check the votes and move the robot accordingly
+                if vote_forward > vote_left and vote_forward > vote_right and vote_forward > 3:
+                    # if there is no object in front of the robot and there is a wall on the right, then go forward
+                    robot.moveForward(0.1)
+                elif vote_left > vote_forward and vote_left > vote_right and vote_left > 3:
+                    # if there is an object in front of the robot and to the right, then turn left
+                    robot.turnLeft()
+                    net_num_left_turns += 1
+                elif vote_right > vote_forward and vote_right > vote_left and vote_right > 3:
+                    # if there is no object in front of the robot and there is no wall on the right, then turn right
+                    robot.turnRight()
+                    net_num_left_turns -= 1
+                else:
+                    logging.error("No clear vote for next move, robot will move forward slightly")
+                    robot.moveForward(0.1)
 
-            server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
-            ready_to_move = False
+                server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
+                current_readings = []
+                ready_to_move = False
             
 
 
@@ -218,6 +229,8 @@ class Robot:
             distance = distance + ultrasonic.get_distance()/50
 
         self.moveForward(1)
+        message = self.motor_socket.recv()
+        logging.info("Received message from motor socket: %s" % message)
 
         new_distance = 0
         for i in range(50):
@@ -231,8 +244,8 @@ class Robot:
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
         self.motor_socket.send(b"F" + str(time).encode())
-        message = self.motor_socket.recv()
-        logging.info("Received reply to move from motors %s" % message)
+        # message = self.motor_socket.recv()
+        # logging.info("Received reply to move from motors %s" % message)
 
         distance = time * self.velocity
 
@@ -254,8 +267,8 @@ class Robot:
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
         self.motor_socket.send(b"L0.7")
-        message = self.motor_socket.recv()
-        logging.info("Received reply to turn from motors %s" % message)
+        # message = self.motor_socket.recv()
+        # logging.info("Received reply to turn from motors %s" % message)
 
         if self.dir == Direction.NORTH:
             self.dir = Direction.WEST
@@ -270,8 +283,8 @@ class Robot:
 
         # transmit a message to the motors via zmq socket to turn right and wait for reply
         self.motor_socket.send(b"R1")
-        message = self.motor_socket.recv()
-        logging.info("Received reply to turn from motors %s" % message)
+        # message = self.motor_socket.recv()
+        # logging.info("Received reply to turn from motors %s" % message)
 
         if self.dir == Direction.NORTH:
             self.dir = Direction.EAST
