@@ -10,8 +10,7 @@ import math
 import random
 from time import sleep
 
-# Use motors_main() defined in motors.py to test the motors
-#from sensor import sensor_main
+from sensor import sensor_main
 
 def calculateAbsolutePosition(angle, distance):
         # calculate the absolute position of the measured object using the robots current position, 
@@ -30,24 +29,24 @@ if __name__ == '__main__':
     server_socket = context.socket(zmq.PUB)
     server_socket.bind("tcp://*:5558")
 
-    # sensor_thread = threading.Thread(target=sensor_main)
-    # sensor_thread.start()
+    sensor_thread = threading.Thread(target=sensor_main)
+    sensor_thread.start()
 
-    # # create a zmq PUB/SUB sensor_socket to communicate with the sensors
-    # sensor_socket = context.socket(zmq.SUB)
-    # sensor_socket.connect("tcp://localhost:5556")
-    # sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
+    # create a zmq PUB/SUB sensor_socket to communicate with the sensors
+    sensor_socket = context.socket(zmq.SUB)
+    sensor_socket.connect("tcp://localhost:5556")
+    sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
 
     while True:
-        #sensor_data = sensor_socket.recv_string()
-        sensor_data = randomData()
+        sensor_data = sensor_socket.recv_string()
+        #sensor_data = randomData()
         # parse the sensor data as [angle], [distance]
         sensor_data = sensor_data.split(",")
 
         # calculate the absolute position of the measured object using the robots current position,
         # measured angle, and measured distance and then add the location to the positions list
         point = calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
-        temp = "{}, {}".format(point[0], point[1])
+        temp = "{}, {},point".format(point[0], point[1])
         print(temp)
         sleep(1)
         server_socket.send_string(temp)

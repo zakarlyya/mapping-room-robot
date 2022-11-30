@@ -46,20 +46,24 @@ class MyWidget(pg.GraphicsLayoutWidget):
 
     def getNewData(self):
         str = self.socket.recv_string()
-        sensor_data = str.split(",")
-        print(sensor_data)
-        self.x = np.append(self.x, float(sensor_data[0]))
-        self.y = np.append(self.y, float(sensor_data[1]))
-        self.robotX = 0
-        self.robotY = 0
+        data = str.split(",")
+        print(data)
+
+        if(data[2] is "point"):
+            self.x = np.append(self.x, float(data[0]))
+            self.y = np.append(self.y, float(data[1]))
+        elif(data[2] is "robot"):
+            self.robotX = float(data[0])
+            self.robotY = float(data[1])
+
         self.setData(self.x, self.y, self.robotX, self.robotY)
 
 def main():
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    robot_ip_address = "192.168.86.227"
-    robot_ip_address = "localhost"
-    #robot_ip_address = input("Enter robot IP address: ")
+    #robot_ip_address = "192.168.86.227"
+    #robot_ip_address = "localhost"
+    robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
 

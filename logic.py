@@ -148,7 +148,7 @@ def logic_main():
             # measured angle, and measured distance and then add the location to the positions list
             point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
             points.append(point)
-            server_socket.send_string("{}, {}".format(point[0], point[1]))
+            server_socket.send_string("{}, {},point".format(point[0], point[1]))
             
             socks = dict(poller.poll())
 
@@ -192,6 +192,7 @@ def logic_main():
                 logging.error("No clear vote for next move, robot will move forward slightly")
                 robot.moveForward(0.1)
 
+            server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
             ready_to_move = False
             
 
