@@ -138,7 +138,7 @@ def logic_main():
         while sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN:
             sensor_data = sensor_socket.recv_string()
 
-            logging.info("Received sensor data: %s" % sensor_data)
+            # logging.info("Received sensor data: %s" % sensor_data)
 
             # parse the sensor data as [angle], [distance]
             sensor_data = sensor_data.split(",")
@@ -148,13 +148,14 @@ def logic_main():
             # measured angle, and measured distance and then add the location to the positions list
             point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
             points.append(point)
+            logging.info("Calculated absolute position of point as: %s" % point)
             server_socket.send_string("{}, {},point".format(point[0], point[1]))
             
             socks = dict(poller.poll())
 
         # if the robot is ready to move, move it
         if ready_to_move:
-            
+            logging.DEBUG("Robot is ready to move")
             # In an effort to remove erroneous data points, each sensor reading is used as a "vote" for the next move
             vote_forward = 0
             vote_left = 0
@@ -251,7 +252,7 @@ class Robot:
     def turnLeft(self):
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
-        self.motor_socket.send(b"L1")
+        self.motor_socket.send(b"L0.7")
         message = self.motor_socket.recv()
         logging.info("Received reply to turn from motors %s" % message)
 
