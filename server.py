@@ -36,7 +36,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
             symbolBrush=(0,255,0), symbolSize=25, symbolPen=None)
 
         self.timer = QtCore.QTimer(self)
-        self.timer.setInterval(10) # in milliseconds
+        self.timer.setInterval(1) # in milliseconds
         self.timer.start()
         self.timer.timeout.connect(self.getNewData)
 
@@ -47,12 +47,12 @@ class MyWidget(pg.GraphicsLayoutWidget):
     def getNewData(self):
         str = self.socket.recv_string()
         data = str.split(",")
-        print(data)
+        # print(data)
 
-        if(data[2] is "point"):
+        if(data[2] == "point"):
             self.x = np.append(self.x, float(data[0]))
             self.y = np.append(self.y, float(data[1]))
-        elif(data[2] is "robot"):
+        elif(data[2] == "robot"):
             self.robotX = float(data[0])
             self.robotY = float(data[1])
 
@@ -61,9 +61,8 @@ class MyWidget(pg.GraphicsLayoutWidget):
 def main():
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    #robot_ip_address = "192.168.86.227"
-    #robot_ip_address = "localhost"
-    robot_ip_address = input("Enter robot IP address: ")
+    robot_ip_address = "192.168.171.227" # or "localhost"
+    #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
 

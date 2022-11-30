@@ -48,5 +48,4 @@ if __name__ == '__main__':
         point = calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
         temp = "{}, {},point".format(point[0], point[1])
         print(temp)
-        sleep(1)
         server_socket.send_string(temp)
