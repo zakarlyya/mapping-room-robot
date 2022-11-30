@@ -212,14 +212,14 @@ class Robot:
         time.sleep(1)
 
         distance = 0
-        for i in range(10):
-            distance = distance + ultrasonic.get_distance()/10
+        for i in range(50):
+            distance = distance + ultrasonic.get_distance()/50
 
         self.moveForward(1)
 
         new_distance = 0
-        for i in range(10):
-            new_distance = new_distance + ultrasonic.get_distance()/10
+        for i in range(50):
+            new_distance = new_distance + ultrasonic.get_distance()/50
 
         self.velocity = distance - new_distance
         return self.velocity
