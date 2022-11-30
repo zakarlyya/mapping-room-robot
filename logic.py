@@ -104,6 +104,7 @@ def logic_main():
     poller = zmq.Poller()
     poller.register(start_socket, zmq.POLLIN)
     poller.register(sensor_socket, zmq.POLLIN)
+    poller.register(motor_socket, zmq.POLLIN)
 
     # create a mapping_done flag
     mapping_done = False
