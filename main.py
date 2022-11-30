@@ -41,13 +41,10 @@ if __name__ == '__main__':
         message = input("Enter START/STOP command: ")
         if message == "START":
             logic_socket.send(b"START")
-            reply = logic_socket.recv()
-            logging.info("Received reply: %s" % reply)
 
-        # wait for calibration
+            # wait for calibration
             calibration_reply = logic_socket.recv()
-            if(calibration_reply == b"Calibratted"):
-                logging.info("Received reply: %s" % calibration_reply)
+            if(calibration_reply == b"GO"):
                 # wait for input GO
                 while True:
                     message = input("Enter GO command: ")

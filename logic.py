@@ -66,7 +66,6 @@ def logic_main():
     while True:
         message = start_socket.recv()
         if message == b"START":
-            start_socket.send(b"Starting")
             logging.info("Received start signal from main")
             break
         else:
@@ -81,9 +80,10 @@ def logic_main():
     vel = robot.calibrateMotors()
 
     # Wait for go from main
+    start_socket.send("GO")
     message = start_socket.recv()
     if message == b"GO":
-        start_socket.send(b"Starting")
+        start_socket.send(b"Ack")
         logging.info("Received go signal from main")
 
     logging.info("Calibrated motors. Calculated velocity: %s" % vel)
