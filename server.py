@@ -14,51 +14,55 @@ import numpy as np
 # import ZMQ for communication
 import zmq
 
+# Create class for graph which is a PqQt Graph Widget
 class MyWidget(pg.GraphicsLayoutWidget):
-
+    # Constructor for graph widget
     def __init__(self, socket, parent=None):
         super().__init__(parent=parent)
 
+        # set the main window layout and title 
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.setLayout(self.mainLayout)
         self.setWindowTitle("Robot Mapping")
 
+        # set graph variables including list of points and robot position
         self.x = []
         self.y = []
         self.robotX = 0
         self.robotY = 0
+
+        # capture PUB/SUB socket
         self.socket = socket
 
+        # add scatter plot to window along with plot items for points and robot
         self.plotItem = self.addPlot(title="Ultrasonic points")
-        self.plotDataItem = self.plotItem.plot([], pen=None, 
-            symbolBrush=(255,0,0), symbolSize=5, symbolPen=None)
-        self.plotDataItem2 = self.plotItem.plot([], pen=None, 
-            symbolBrush=(0,255,0), symbolSize=25, symbolPen=None)
+        self.plotDataItem = self.plotItem.plot([], pen=None, symbolBrush=(255,0,0), symbolSize=5, symbolPen=None)
+        self.plotDataItem2 = self.plotItem.plot([], pen=None, symbolBrush=(0,255,0), symbolSize=25, symbolPen=None)
 
-        self.timer = QtCore.QTimer(self)
-        self.timer.setInterval(1) # in milliseconds
-        self.timer.start()
-        self.timer.timeout.connect(self.getNewData)
+  
+        self.timer = QtCore.QTimer(self)            # set timer for refreshing grpah and data
+        self.timer.setInterval(1)                   # in milliseconds
+        self.timer.start()                          # start the timer
+        self.timer.timeout.connect(self.getNewData) # call function to update data on timer
 
-    def setData(self, x, y, robotX, robotY):
-        self.plotDataItem.setData(x, y)
-        self.plotDataItem2.setData([robotX], [robotY])
-
+    # function to get data from the robot and update plot
     def getNewData(self):
-        str = self.socket.recv_string()
-        data = str.split(",")
-        print(data)
+        str = self.socket.recv_string() # get data from PUB/SUB socket
+        data = str.split(",")           # split the string up
+        print(data)                     # print the data
 
+        # add data to set of points or update robot position then update the plot
         if(data[2] == "point"):
             self.x = np.append(self.x, float(data[0]))
             self.y = np.append(self.y, float(data[1]))
+            self.plotDataItem.setData(self.x, self.y)  
         elif(data[2] == "robot"):
             self.robotX = float(data[0])
             self.robotY = float(data[1])
+            self.plotDataItem.setData([self.robotX], [self.robotY])
 
-        self.setData(self.x, self.y, self.robotX, self.robotY)
-
-def main():
+if __name__ == "__main__":
+    # create a ZMQ context and connect to PUB/SUB socket and subscribe to all messages
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     robot_ip_address = "192.168.171.227" # or "localhost"
@@ -66,6 +70,7 @@ def main():
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
 
+    # create graph widget, show, and start timer execution
     app = QtWidgets.QApplication([])
     pg.setConfigOptions(antialias=False)
     win = MyWidget(socket)
@@ -73,6 +78,4 @@ def main():
     win.resize(800,600) 
     win.raise_()
     app.exec_()
-
-if __name__ == "__main__":
-    main()
+    
