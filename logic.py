@@ -116,9 +116,10 @@ def logic_main():
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
 
+    current_readings = []           # list of sensor readings
+
     # until the robot receieves a STOP signal from start socket or mapping_done flag is set, loop
     while not mapping_done:
-        current_readings = []           # list of sensor readings
         socks = dict(poller.poll())
 
         # mapping_done if robot net_num_left_turns is 4
@@ -143,14 +144,15 @@ def logic_main():
 
             # parse the sensor data as [angle], [distance]
             sensor_data = sensor_data.split(",")
-            current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
+            if(float(sensor_data[1]) < 30):
+                current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
 
-            # calculate the absolute position of the measured object using the robots current position,
-            # measured angle, and measured distance and then add the location to the positions list
-            point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
-            points.append(point)
-            logging.info("Calculated absolute position of point as: %s" % point)
-            server_socket.send_string("{}, {},point".format(point[0], point[1]))
+                # calculate the absolute position of the measured object using the robots current position,
+                # measured angle, and measured distance and then add the location to the positions list
+                point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
+                points.append(point)
+                logging.info("Calculated absolute position of point as: %s" % point)
+                server_socket.send_string("{}, {},point".format(point[0], point[1]))
             
             socks = dict(poller.poll())
 
@@ -201,6 +203,7 @@ def logic_main():
                 robot.moveForward(0.1)
 
             server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
+            current_readings = []
             ready_to_move = False
             
 
