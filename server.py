@@ -36,12 +36,12 @@ class MyWidget(pg.GraphicsLayoutWidget):
 
         # add scatter plot to window along with plot items for points and robot
         self.plotItem = self.addPlot(title="Ultrasonic points")
-        self.plotDataItem = self.plotItem.plot([], pen=None, symbolBrush=(255,0,0), symbolSize=5, symbolPen=None)
-        self.plotDataItem2 = self.plotItem.plot([], pen=None, symbolBrush=(0,255,0), symbolSize=25, symbolPen=None)
-
+        self.plotPoint = self.plotItem.plot([], pen=None, symbolBrush=(255,0,0), symbolSize=5, symbolPen=None)
+        self.plotRobot = self.plotItem.plot([], pen=None, symbolBrush=(0,255,0), symbolSize=25, symbolPen=None)
+        self.plotRobot.setData([self.robotX], [self.robotY])
   
         self.timer = QtCore.QTimer(self)            # set timer for refreshing grpah and data
-        self.timer.setInterval(1)                   # in milliseconds
+        self.timer.setInterval(10)                   # in milliseconds
         self.timer.start()                          # start the timer
         self.timer.timeout.connect(self.getNewData) # call function to update data on timer
 
@@ -55,20 +55,22 @@ class MyWidget(pg.GraphicsLayoutWidget):
         if(data[2] == "point"):
             self.x = np.append(self.x, float(data[0]))
             self.y = np.append(self.y, float(data[1]))
-            self.plotDataItem.setData(self.x, self.y)  
+            self.plotPoint.setData(self.x, self.y)  
         elif(data[2] == "robot"):
             self.robotX = float(data[0])
             self.robotY = float(data[1])
-            self.plotDataItem.setData([self.robotX], [self.robotY])
+            self.plotRobot.setData([self.robotX], [self.robotY])
+            
 
 if __name__ == "__main__":
     # create a ZMQ context and connect to PUB/SUB socket and subscribe to all messages
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    robot_ip_address = "192.168.171.227" # or "localhost"
+    robot_ip_address = "localhost" # or "localhost"
     #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
+    print("Connected")
 
     # create graph widget, show, and start timer execution
     app = QtWidgets.QApplication([])
@@ -78,4 +80,3 @@ if __name__ == "__main__":
     win.resize(800,600) 
     win.raise_()
     app.exec_()
-    
