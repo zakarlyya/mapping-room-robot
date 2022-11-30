@@ -154,6 +154,11 @@ def logic_main():
             
             socks = dict(poller.poll())
 
+        # if the motor socket has a reply, set ready_to_move to true
+        if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
+            motor_socket.recv()
+            ready_to_move = True
+
         # if the robot is ready to move, move it
         if ready_to_move:
             logging.DEBUG("Robot is ready to move")
