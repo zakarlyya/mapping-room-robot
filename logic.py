@@ -148,7 +148,7 @@ def logic_main():
             # measured angle, and measured distance and then add the location to the positions list
             point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
             points.append(point)
-            server_socket.send_string(str(point))
+            server_socket.send_string("{}, {}".format(point[0], point[1]))
             
             socks = dict(poller.poll())
 
