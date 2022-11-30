@@ -162,7 +162,7 @@ def logic_main():
 
         # if the robot is ready to move, move it
         if ready_to_move:
-            logging.DEBUG("Robot is ready to move")
+            logging.info("Robot is ready to move")
             # In an effort to remove erroneous data points, each sensor reading is used as a "vote" for the next move
             vote_forward = 0
             vote_left = 0
