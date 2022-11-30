@@ -25,8 +25,8 @@ class MyWidget(pg.GraphicsLayoutWidget):
 
         self.x = []
         self.y = []
-        self.robotX = []
-        self.robotY = []
+        self.robotX = 0
+        self.robotY = 0
         self.socket = socket
 
         self.plotItem = self.addPlot(title="Ultrasonic points")
@@ -46,19 +46,19 @@ class MyWidget(pg.GraphicsLayoutWidget):
 
     def getNewData(self):
         str = self.socket.recv_string()
-        print(str)
-        # change to sub here where the data is being polled every 100 milliseconds
-        numPoints = 1
-        self.x = np.append(self.x, np.random.normal(size=numPoints))
-        self.y = np.append(self.y, np.random.normal(size=numPoints))
-        self.robotX = np.random.normal()
-        self.robotY = np.random.normal()
+        sensor_data = str.split(",")
+        print(sensor_data)
+        self.x = np.append(self.x, float(sensor_data[0]))
+        self.y = np.append(self.y, float(sensor_data[1]))
+        self.robotX = 0
+        self.robotY = 0
         self.setData(self.x, self.y, self.robotX, self.robotY)
 
 def main():
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
     robot_ip_address = "192.168.86.227"
+    robot_ip_address = "localhost"
     #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
