@@ -87,8 +87,6 @@ def logic_main():
     # FIXME move forward until robot is certain distance away from wall
 
     robot.turnLeft()
-    message = motor_socket.recv()
-    logging.info("Received motor reply: %s" % message)
 
     sensor_thread = threading.Thread(target=sensor_main)
     sensor_thread.start()
