@@ -58,10 +58,6 @@ def logic_main():
     start_socket = context.socket(zmq.REP)
     start_socket.bind("tcp://*:5557")
 
-    # create a zmq PUB/SUB communications_socket to communicate with the server
-    server_socket = context.socket(zmq.PUB)
-    server_socket.bind("tcp://*:5558")
-
     # wait for the start signal on start socket
     while True:
         message = start_socket.recv()
@@ -91,6 +87,8 @@ def logic_main():
     # FIXME move forward until robot is certain distance away from wall
 
     robot.turnLeft()
+    message = motor_socket.recv()
+    logging.info("Received motor reply: %s" % message)
 
     sensor_thread = threading.Thread(target=sensor_main)
     sensor_thread.start()
@@ -99,6 +97,10 @@ def logic_main():
     sensor_socket = context.socket(zmq.SUB)
     sensor_socket.connect("tcp://localhost:5556")
     sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
+
+    # create a zmq PUB/SUB communications_socket to communicate with the server
+    server_socket = context.socket(zmq.PUB)
+    server_socket.bind("tcp://*:5558")
 
     # poll the start socket for a stop signal, also poll the motor socket for a reply, also poll the sensor socket for sensor data
     poller = zmq.Poller()
@@ -154,9 +156,10 @@ def logic_main():
             
             socks = dict(poller.poll())
 
-        # if the motor socket has a reply, set ready_to_move to true
+        # if motor_socket has a reply, set ready_to_move to true
         if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
-            motor_socket.recv()
+            message = motor_socket.recv()
+            logging.info("Received motor reply %s" % message)
             ready_to_move = True
 
         # if the robot is ready to move, move it
@@ -223,6 +226,8 @@ class Robot:
             distance = distance + ultrasonic.get_distance()/50
 
         self.moveForward(1)
+        message = self.motor_socket.recv()
+        logging.info("Received message from motor socket: %s" % message)
 
         new_distance = 0
         for i in range(50):
@@ -236,8 +241,8 @@ class Robot:
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
         self.motor_socket.send(b"F" + str(time).encode())
-        message = self.motor_socket.recv()
-        logging.info("Received reply to move from motors %s" % message)
+        # message = self.motor_socket.recv()
+        # logging.info("Received reply to move from motors %s" % message)
 
         distance = time * self.velocity
 
@@ -259,8 +264,8 @@ class Robot:
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
         self.motor_socket.send(b"L0.7")
-        message = self.motor_socket.recv()
-        logging.info("Received reply to turn from motors %s" % message)
+        # message = self.motor_socket.recv()
+        # logging.info("Received reply to turn from motors %s" % message)
 
         if self.dir == Direction.NORTH:
             self.dir = Direction.WEST
@@ -275,8 +280,8 @@ class Robot:
 
         # transmit a message to the motors via zmq socket to turn right and wait for reply
         self.motor_socket.send(b"R1")
-        message = self.motor_socket.recv()
-        logging.info("Received reply to turn from motors %s" % message)
+        # message = self.motor_socket.recv()
+        # logging.info("Received reply to turn from motors %s" % message)
 
         if self.dir == Direction.NORTH:
             self.dir = Direction.EAST
