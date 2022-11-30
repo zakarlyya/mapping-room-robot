@@ -80,6 +80,12 @@ def logic_main():
     robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)
     vel = robot.calibrateMotors()
 
+    # Wait for go from main
+    message = start_socket.recv()
+    if message == b"GO":
+        start_socket.send(b"Starting")
+        logging.info("Received go signal from main")
+
     logging.info("Calibrated motors. Calculated velocity: %s" % vel)
 
     # robot.turnLeft()
