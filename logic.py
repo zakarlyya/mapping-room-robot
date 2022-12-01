@@ -144,9 +144,10 @@ def logic_main():
             # receive and parse the sensor data as [angle], [distance]
             sensor_data = sensor_socket.recv_string()
             sensor_data = sensor_data.split(",")
+            logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
 
             if(not disregard_data):
-                logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
+                current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
                 if(float(sensor_data[1]) <= 40):
                     # calculate the absolute position of the measured object using the robots current position,
                     # measured angle, and measured distance and then add the location to the positions list
