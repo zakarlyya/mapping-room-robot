@@ -28,10 +28,10 @@ def sensor_main():
     while True:
         distance = 0
         for i in range(num_trials):
-            distance = distance + ultrasonic.get_distance()/num_trials
-
-        print(distance)
-
+            temp = ultrasonic.get_distance()
+            print(temp)
+            distance = distance + temp/num_trials
+            
         socket.send_string("{}, {}".format(angle, distance))
         
         if increasing:
