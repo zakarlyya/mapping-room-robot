@@ -190,6 +190,8 @@ def logic_main():
                             if(dist_in_front < 15):
                                 vote_not_forward += 1
                                 logging.info("Object in front, not voting forward")
+                current_readings = []
+                
             else:
                 logging.info("Not enough sensor readings to make a decision, %s" % len(current_readings)) 
             
@@ -225,7 +227,6 @@ def logic_main():
 
             server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
             logging.info("Robot current position: %s" % robot.pos)
-            current_readings = []
 
 
 class Robot:
