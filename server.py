@@ -71,9 +71,8 @@ if __name__ == "__main__":
     # create a ZMQ context and connect to PUB/SUB socket and subscribe to all messages
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    #robot_ip_address = "192.168.171.227"
-    robot_ip_address = "localhost"
-    #robot_ip_address = input("Enter robot IP address: ")
+    #robot_ip_address = "localhost"
+    robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
     print("Listening")
