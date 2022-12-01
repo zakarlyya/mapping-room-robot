@@ -113,6 +113,8 @@ def logic_main():
     # Set net number of turns to track where in room
     net_num_left_turns = 0
 
+    dist_in_front = 100
+
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
 
@@ -163,15 +165,17 @@ def logic_main():
             ready_to_move = True
 
         # if the robot is ready to move, move it
-        if ready_to_move and len(current_readings) > 20:
-            logging.info("Robot is ready to move")
+        if ready_to_move:
             # In an effort to remove erroneous data points, each sensor reading is used as a "vote" for the next move
             vote_forward = 0
             vote_left = 0
             vote_right = 0
             vote_not_forward = 0
+            isData = 0
             # iterate through all the data in the current sensor data list
             for data in current_readings:
+                isData = 1
+                    
                 # if a measurement is made on the right 
                 if data[0] < -70:
                     #if data[1] > 15:
@@ -180,11 +184,17 @@ def logic_main():
                     logging.info("Voted forward")
                 
                 # check if a measurement is made in front
-                if -20 < data[0] < 20 and data[1] < 15:
-                    vote_not_forward += 1
-                    logging.info("Object in front, not voting forward")
+                if -20 < data[0] < 20:
+                    dist_in_front = (0.25 * data[1]) + (1-0.25) * dist_in_front
+                    if(dist_in_front < 15):
+                        vote_not_forward += 1
+                        logging.info("Object in front, not voting forward")
                 
+            
             if vote_forward > vote_not_forward and vote_forward > 4:
+                robot.moveForward(0.1)
+                ready_to_move = False
+            elif isData == 0 and dist_in_front > 15:
                 robot.moveForward(0.1)
                 ready_to_move = False
 
