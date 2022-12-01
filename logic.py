@@ -191,7 +191,7 @@ def logic_main():
                                 vote_not_forward += 1
                                 logging.info("Object in front, not voting forward")
             else:
-                logging.info("Not enough sensor readings to make a decision, %s" % len(current_readings))") 
+                logging.info("Not enough sensor readings to make a decision, %s" % len(current_readings)) 
             
             if vote_forward > vote_not_forward and vote_forward > 4:
                 robot.moveForward(0.1)
