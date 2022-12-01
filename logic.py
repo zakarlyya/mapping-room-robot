@@ -155,7 +155,7 @@ def logic_main():
             ready_to_move = True
 
         # if the robot is ready to move, move it
-        if ready_to_move and len(current_readings) > 20:
+        if ready_to_move and len(current_readings) > 10:
             # In an effort to remove erroneous data points, each sensor reading is used as a "vote" for the next move
             logging.info("Ready to move")
             vote_forward = 0
@@ -206,8 +206,8 @@ def logic_main():
             elif dist_in_front > 15:
                 logging.info("No clear decision, moving forward")
                 # Check that motor socket is available to recieve
-                #robot.moveForward(0.1)
-                #ready_to_move = False
+                robot.moveForward(0.1)
+                ready_to_move = False
 
             server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
             logging.info("Robot current position: %s" % robot.pos)
