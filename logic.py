@@ -114,6 +114,8 @@ def logic_main():
 
     dist_in_front = 100
 
+    disregard_data = False
+
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
 
@@ -165,6 +167,11 @@ def logic_main():
 
         # if the robot is ready to move, move it
         if ready_to_move and len(current_readings) >= 90:
+            if disregard_data:
+                current_readings = []
+                disregard_data = False
+                continue
+
             # In an effort to remove erroneous data points, each sensor reading is used as a "vote" for the next move
             logging.info("Ready to move")
             vote_forward = 0
@@ -213,6 +220,8 @@ def logic_main():
                 logging.info("IN TURNING: Received motor reply %s" % message)
 
                 robot.moveForward(1)
+
+                disregard_data = True
                 dist_in_front = 100
                 net_num_left_turns -= 1
                 ready_to_move = False
