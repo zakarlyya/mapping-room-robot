@@ -38,10 +38,8 @@ if __name__ == '__main__':
 
     while True:
         try:
-            print ("\nEnd of program")
             sensor_data = sensor_socket.recv_string()
             #sensor_data = randomData()
-
             sensor_data = sensor_data.split(",")    # parse the sensor data as [angle], [distance]
 
             # calculate the absolute position of the measured object using the robots current position,

@@ -23,7 +23,7 @@ def sensor_main():
     angle = 0
     increasing = True
 
-    num_trials = 20
+    num_trials = 10
 
     while True:
         distance = 0
