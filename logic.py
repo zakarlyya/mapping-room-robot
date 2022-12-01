@@ -138,10 +138,9 @@ def logic_main():
             else:
                 logging.ERROR("Received unknown stop signal from main: %s" % message)
 
-        if sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN:
+        while sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN and len(current_readings) < 90:
+            # receive and parse the sensor data as [angle], [distance]
             sensor_data = sensor_socket.recv_string()
-
-            # parse the sensor data as [angle], [distance]
             sensor_data = sensor_data.split(",")
             logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
             current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
@@ -151,10 +150,12 @@ def logic_main():
         if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
             message = motor_socket.recv()
             logging.info("IN POLLER: Received motor reply %s" % message)
+            server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
+            logging.info("Robot current position: %s" % robot.pos)
             ready_to_move = True
 
         # if the robot is ready to move, move it
-        if ready_to_move and len(current_readings) > 10:
+        if ready_to_move and len(current_readings) >= 90:
             # In an effort to remove erroneous data points, each sensor reading is used as a "vote" for the next move
             logging.info("Ready to move")
             vote_forward = 0
@@ -164,11 +165,10 @@ def logic_main():
 
             # check if there are at least 10 sensor readings
             for data in current_readings:
-                    
                 # Ignore data if measurement distance is more than 30 cm away
-                if(data[1] < 30):
-                        # calculate the absolute position of the measured object using the robots current position,
-                        # measured angle, and measured distance and then add the location to the positions list
+                if(data[1] < 40):
+                    # calculate the absolute position of the measured object using the robots current position,
+                    # measured angle, and measured distance and then add the location to the positions list
                     point = robot.calculateAbsolutePosition(float(data[0]), float(data[1]))
                     points.append(point)
                     logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (data[0], data[1], point))
@@ -177,7 +177,7 @@ def logic_main():
                         # if a measurement is made on the right 
                     if data[0] < -70:
                         #if data[1] > 15:
-                            # FIXME: we will have to use this to correct for DRIFT
+                            # TODO: we will have to use this to correct for DRIFT
                         vote_forward += 1
                         logging.info("Voted forward")
                     
@@ -207,9 +207,6 @@ def logic_main():
                 # Check that motor socket is available to recieve
                 robot.moveForward(0.1)
                 ready_to_move = False
-
-            server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
-            logging.info("Robot current position: %s" % robot.pos)
 
 
 class Robot:
@@ -268,7 +265,7 @@ class Robot:
     def turnLeft(self):
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
-        self.motor_socket.send(b"L0.7")
+        self.motor_socket.send(b"L0.6")
         # message = self.motor_socket.recv()
         # logging.info("Received reply to turn from motors %s" % message)
 
@@ -284,7 +281,7 @@ class Robot:
     def turnRight(self):
 
         # transmit a message to the motors via zmq socket to turn right and wait for reply
-        self.motor_socket.send(b"R1")
+        self.motor_socket.send(b"R0.6")
         # message = self.motor_socket.recv()
         # logging.info("Received reply to turn from motors %s" % message)
 
