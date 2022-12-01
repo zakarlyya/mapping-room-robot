@@ -242,6 +242,8 @@ class Robot:
 
         if(new_distance > 7.5):
             self.moveForward((new_distance - 7.5)/ self.velocity)
+            message = self.motor_socket.recv()
+            logging.info("Received message from motor socket: %s" % message)
 
         return self.velocity
 
