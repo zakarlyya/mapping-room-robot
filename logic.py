@@ -146,7 +146,7 @@ def logic_main():
             logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
             current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
 
-            if(sensor_data[1] <= 40):
+            if(float(sensor_data[1]) <= 40):
                 # calculate the absolute position of the measured object using the robots current position,
                 # measured angle, and measured distance and then add the location to the positions list
                 point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
@@ -269,7 +269,7 @@ class Robot:
     def turnLeft(self):
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
-        self.motor_socket.send(b"L0.625")
+        self.motor_socket.send(b"L0.63")
         # message = self.motor_socket.recv()
         # logging.info("Received reply to turn from motors %s" % message)
 
@@ -285,7 +285,7 @@ class Robot:
     def turnRight(self):
 
         # transmit a message to the motors via zmq socket to turn right and wait for reply
-        self.motor_socket.send(b"R0.625")
+        self.motor_socket.send(b"R0.63")
         # message = self.motor_socket.recv()
         # logging.info("Received reply to turn from motors %s" % message)
 
