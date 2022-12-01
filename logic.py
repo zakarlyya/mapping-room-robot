@@ -177,7 +177,7 @@ def logic_main():
                 # Ignore data if measurement distance is more than 30 cm away
                 if(data[1] < 40):
                     # if a measurement is made on the right 
-                    if data[0] < -70:
+                    if data[0] < -60:
                         vote_forward += 1
                         logging.info("Voted forward")
                     
@@ -189,7 +189,7 @@ def logic_main():
                             vote_not_forward += 1
                             vote_left += 1
                             logging.info("Object in front, not voting forward")
-                elif data[0] < -70:
+                elif data[0] < -60:
                     vote_right += 1
                     logging.info("No object detected on the right, voting turn right")
 
@@ -204,6 +204,9 @@ def logic_main():
                 net_num_left_turns += 1
                 ready_to_move = False
             elif vote_right > vote_left and vote_right > 4:
+                robot.moveForward(0.5)
+                message = motor_socket.recv()
+                logging.info("IN POLLER: Received motor reply %s" % message)
                 robot.turnRight()
                 dist_in_front = 100
                 net_num_left_turns -= 1
