@@ -144,6 +144,7 @@ def logic_main():
 
             # parse the sensor data as [angle], [distance]
             sensor_data = sensor_data.split(",")
+            logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
             current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
             socks = dict(poller.poll())
 
@@ -156,7 +157,7 @@ def logic_main():
         # if the robot is ready to move, move it
         if ready_to_move:
             # In an effort to remove erroneous data points, each sensor reading is used as a "vote" for the next move
-            
+            logging.info("Ready to move")
             vote_forward = 0
             vote_left = 0
             vote_right = 0
@@ -189,7 +190,8 @@ def logic_main():
                             if(dist_in_front < 15):
                                 vote_not_forward += 1
                                 logging.info("Object in front, not voting forward")
-                
+            else:
+                logging.info("Not enough sensor readings to make a decision, %s" % len(current_readings))") 
             
             if vote_forward > vote_not_forward and vote_forward > 4:
                 robot.moveForward(0.1)
@@ -223,9 +225,6 @@ def logic_main():
             server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
             logging.info("Robot current position: %s" % robot.pos)
             current_readings = []
-
-        else:
-            logging.info("Number of current readings: %s" % len(current_readings))
 
 
 class Robot:
