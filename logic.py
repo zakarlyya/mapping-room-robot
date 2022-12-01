@@ -195,7 +195,7 @@ def logic_main():
             current_readings = []
 
             if vote_forward > vote_not_forward and vote_forward > 4:
-                robot.moveForward(0.5)
+                robot.moveForward(1)
                 ready_to_move = False
             elif vote_left > vote_right and vote_left > 4:
                 robot.turnLeft()
@@ -240,8 +240,8 @@ class Robot:
 
         self.velocity = distance - new_distance
 
-        if(new_distance > 10):
-            self.moveForward((new_distance - 10)/ self.velocity)
+        if(new_distance > 7.5):
+            self.moveForward((new_distance - 7.5)/ self.velocity)
             message = self.motor_socket.recv()
             logging.info("Received message from motor socket: %s" % message)
 
