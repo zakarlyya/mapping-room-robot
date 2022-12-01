@@ -147,13 +147,14 @@ def logic_main():
             logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
             current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
 
-            if(float(sensor_data[1]) <= 40):
-                # calculate the absolute position of the measured object using the robots current position,
-                # measured angle, and measured distance and then add the location to the positions list
-                point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
-                points.append(point)
-                logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
-                server_socket.send_string("{}, {},point".format(point[0], point[1]))
+            if(not disregard_data):
+                if(float(sensor_data[1]) <= 40):
+                    # calculate the absolute position of the measured object using the robots current position,
+                    # measured angle, and measured distance and then add the location to the positions list
+                    point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
+                    points.append(point)
+                    logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
+                    server_socket.send_string("{}, {},point".format(point[0], point[1]))
 
             socks = dict(poller.poll())
 
@@ -215,13 +216,13 @@ def logic_main():
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
 
+                disregard_data = True
                 robot.turnRight()
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
 
                 robot.moveForward(1)
 
-                disregard_data = True
                 dist_in_front = 100
                 net_num_left_turns -= 1
                 ready_to_move = False
