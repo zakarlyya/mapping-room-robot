@@ -202,7 +202,8 @@ def logic_main():
                 net_num_left_turns -= 1
                 ready_to_move = False
             elif dist_in_front > 15:
-                robot.moveForward(0.1)
+                logging.info("No clear decision, moving forward")
+                #robot.moveForward(0.1)
                 ready_to_move = False
 
             else: 
@@ -257,12 +258,9 @@ class Robot:
 
     # Distance is specified in inches
     def moveForward(self, time):
-        
-        # convert time to 2 decimal place string
-        str_time = "{:.2f}".format(time)
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
-        self.motor_socket.send(b"F" + str_time.encode('utf-8'))
+        self.motor_socket.send(b"F" + str(time).encode())
         # message = self.motor_socket.recv()
         # logging.info("Received reply to move from motors %s" % message)
 
