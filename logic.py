@@ -160,7 +160,9 @@ def logic_main():
         if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
             message = motor_socket.recv()
             logging.info("IN POLLER: Received motor reply %s" % message)
-            ready_to_move = True
+            # if we have more than 50 current readings, ready_to_move is true
+            if len(current_readings) > 50:
+                ready_to_move = True
 
         # if the robot is ready to move, move it
         if ready_to_move:
@@ -189,7 +191,7 @@ def logic_main():
                 
             # if there is no data, move forward
             if isData == 0:
-                logging.error("No data retrieved from sensors... Waiting for next clock cycle to make a move")
+                logging.debug("No data retrieved from sensors... Waiting for next clock cycle to make a move")
             else:
                 if vote_forward > vote_not_forward and vote_forward > 4:
                     robot.moveForward(0.1)
@@ -205,10 +207,11 @@ def logic_main():
                 #    robot.turnRight()
                 #    net_num_left_turns -= 1
 
-                    logging.error("Vote not made to move forward")
+                    logging.error("Decided not to move forward")
                     # robot.moveForward(0.1)
 
                 server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
+                logging.info("Robot current position: %s" % robot.pos)
                 current_readings = []
                 ready_to_move = False
             
