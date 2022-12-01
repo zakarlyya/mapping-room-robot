@@ -144,10 +144,9 @@ def logic_main():
             # receive and parse the sensor data as [angle], [distance]
             sensor_data = sensor_socket.recv_string()
             sensor_data = sensor_data.split(",")
-            logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
-            current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
 
             if(not disregard_data):
+                logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
                 if(float(sensor_data[1]) <= 40):
                     # calculate the absolute position of the measured object using the robots current position,
                     # measured angle, and measured distance and then add the location to the positions list
@@ -201,8 +200,6 @@ def logic_main():
                     vote_right += 1
                     logging.info("No object detected on the right, voting turn right")
 
-            current_readings = []
-
             if vote_forward > vote_not_forward and vote_forward > 4:
                 robot.moveForward(0.8)
                 ready_to_move = False
@@ -231,6 +228,8 @@ def logic_main():
                 # Check that motor socket is available to recieve
                 robot.moveForward(0.2)
                 ready_to_move = False
+                
+            current_readings = []
 
 
 class Robot:
