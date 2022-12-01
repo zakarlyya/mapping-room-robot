@@ -86,6 +86,7 @@ def logic_main():
     # TODO move forward until robot is a certain distance away from wall
 
     robot.turnLeft()
+    robot.dir = Direction.NORTH
 
     sensor_thread = threading.Thread(target=sensor_main)
     sensor_thread.start()
@@ -192,7 +193,7 @@ def logic_main():
             current_readings = []
 
             if vote_forward > vote_not_forward and vote_forward > 4:
-                robot.moveForward(0.1)
+                robot.moveForward(0.5)
                 ready_to_move = False
             elif vote_left > vote_right and vote_left > 4:
                 robot.turnLeft()
@@ -202,10 +203,10 @@ def logic_main():
                 robot.turnRight()
                 net_num_left_turns -= 1
                 ready_to_move = False
-            elif dist_in_front > 15:
+            elif dist_in_front > 30:
                 logging.info("No clear decision, moving forward")
                 # Check that motor socket is available to recieve
-                robot.moveForward(0.1)
+                robot.moveForward(0.2)
                 ready_to_move = False
 
 
@@ -265,7 +266,7 @@ class Robot:
     def turnLeft(self):
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
-        self.motor_socket.send(b"L0.6")
+        self.motor_socket.send(b"L0.65")
         # message = self.motor_socket.recv()
         # logging.info("Received reply to turn from motors %s" % message)
 
@@ -281,7 +282,7 @@ class Robot:
     def turnRight(self):
 
         # transmit a message to the motors via zmq socket to turn right and wait for reply
-        self.motor_socket.send(b"R0.6")
+        self.motor_socket.send(b"R0.65")
         # message = self.motor_socket.recv()
         # logging.info("Received reply to turn from motors %s" % message)
 
