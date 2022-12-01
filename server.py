@@ -41,7 +41,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
         self.plotRobot.setData([self.robotX], [self.robotY])
   
         self.timer = QtCore.QTimer(self)            # set timer for refreshing grpah and data
-        self.timer.setInterval(10)                   # in milliseconds
+        self.timer.setInterval(1)                   # in milliseconds
         self.timer.start()                          # start the timer
         self.timer.timeout.connect(self.getNewData) # call function to update data on timer
 
