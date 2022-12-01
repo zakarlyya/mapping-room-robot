@@ -37,7 +37,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
         # add scatter plot to window along with plot items for points and robot
         self.plotItem = self.addPlot(title="Ultrasonic points")
         self.plotPoint = self.plotItem.plot([], pen=None, symbolBrush=(255,0,0), symbolSize=5, symbolPen=None)
-        self.plotRobot = self.plotItem.plot([], pen=None, symbolBrush=(0,255,0), symbolSize=25, symbolPen=None)
+        self.plotRobot = self.plotItem.plot([], pen=None, symbolBrush=(0,255,0), symbolSize=20, symbolPen=None)
         self.plotRobot.setData([self.robotX], [self.robotY])
   
         self.timer = QtCore.QTimer(self)            # set timer for refreshing grpah and data

@@ -23,7 +23,7 @@ def sensor_main():
     angle = 0
     increasing = True
 
-    num_trials = 10
+    num_trials = 8
 
     while True:
         distance = 0
@@ -33,9 +33,9 @@ def sensor_main():
         socket.send_string("{}, {}".format(angle, distance))
         
         if increasing:
-            angle = angle + 5
+            angle = angle + 9
         else:
-            angle = angle - 5
+            angle = angle - 9
 
         if angle == 90:
             increasing = False

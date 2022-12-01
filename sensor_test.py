@@ -49,6 +49,7 @@ if __name__ == '__main__':
             #sleep(0.1)
             server_socket.send_string("{}, {},point".format(point[0], point[1]))
         except KeyboardInterrupt:
-            print("Closeing server socket")
+            print("Closing server socket")
             server_socket.close()
+            break
         
