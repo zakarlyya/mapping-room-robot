@@ -211,7 +211,7 @@ def logic_main():
                 net_num_left_turns += 1
                 ready_to_move = False
             elif vote_right > vote_left and vote_right > 4:
-                robot.moveForward(0.3)
+                robot.moveForward(0.5)
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
 
