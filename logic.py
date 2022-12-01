@@ -240,7 +240,8 @@ class Robot:
 
         self.velocity = distance - new_distance
 
-        self.moveForward((new_distance - 7.5)/ self.velocity)
+        if(new_distance > 7.5):
+            self.moveForward((new_distance - 7.5)/ self.velocity)
 
         return self.velocity
 
