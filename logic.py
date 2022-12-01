@@ -212,7 +212,7 @@ def logic_main():
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
 
-                robot.moveForward(0.7)
+                robot.moveForward(1)
                 dist_in_front = 100
                 net_num_left_turns -= 1
                 ready_to_move = False
