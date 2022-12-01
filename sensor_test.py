@@ -17,7 +17,7 @@ def calculateAbsolutePosition(angle, distance):
         return [distance * math.sin(math.radians(angle)), distance * math.cos(math.radians(angle))]
 
 def randomData():
-    distance = round(random.random()*300)
+    distance = round(random.random()*300-150)
     angle = round(random.random()*180 - 90)
     return "{}, {}".format(angle, distance)
 
@@ -52,4 +52,3 @@ if __name__ == '__main__':
             print("Closing server socket")
             server_socket.close()
             break
-        

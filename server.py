@@ -23,7 +23,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
         # set the main window layout and title 
         self.mainLayout = QtWidgets.QVBoxLayout()
         self.setLayout(self.mainLayout)
-        self.setWindowTitle("Robot Mapping")
+        self.setWindowTitle("Autonomous Robot Room Mapping")
 
         # set graph variables including list of points and robot position
         self.x = []
@@ -34,8 +34,13 @@ class MyWidget(pg.GraphicsLayoutWidget):
         # capture PUB/SUB socket
         self.socket = socket
 
-        # add scatter plot to window along with plot items for points and robot
+        # add scatter plot to window along with grid and label for axis
         self.plotItem = self.addPlot(title="Ultrasonic points")
+        self.plotItem.showGrid(x=True, y=True)
+        self.plotItem.setLabel('left', units="cm")
+        self.plotItem.setLabel('bottom', units="cm")
+
+        # add plot item for points and robot
         self.plotPoint = self.plotItem.plot([], pen=None, symbolBrush=(255,0,0), symbolSize=5, symbolPen=None)
         self.plotRobot = self.plotItem.plot([], pen=None, symbolBrush=(0,255,0), symbolSize=20, symbolPen=None)
         self.plotRobot.setData([self.robotX], [self.robotY])
@@ -66,7 +71,8 @@ if __name__ == "__main__":
     # create a ZMQ context and connect to PUB/SUB socket and subscribe to all messages
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    robot_ip_address = "192.168.171.227" # or "localhost"
+    #robot_ip_address = "192.168.171.227"
+    robot_ip_address = "localhost"
     #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
