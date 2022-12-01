@@ -169,40 +169,44 @@ def logic_main():
             vote_forward = 0
             vote_left = 0
             vote_right = 0
+            vote_not_forward = 0
             isData = 0
             # iterate through all the data in the current sensor data list
             for data in current_readings:
                 isData = 1
+
                 # if a measurement is made on the right 
-                if data[0] < -70 and data[1] < 10:
-                    vote_right += 1
-                    logging.info("Voted right")
-                elif -20 < data[0] < 20 and data[1] > 10:
+                if data[0] < -70:
+                    #if data[1] > 15:
+                        # FIXME: we will have to use this to correct for DRIFT
                     vote_forward += 1
                     logging.info("Voted forward")
-                else:
-                    vote_left += 1
-                    logging.info("Voted left")
+                
+                # check if a measurement is made in front
+                if -20 < data[0] < 20 and data[1] < 15:
+                    vote_not_forward += 1
+                    logging.info("Object in front, not voting forward")
                 
             # if there is no data, move forward
             if isData == 0:
                 logging.error("No data retrieved from sensors... Waiting for next clock cycle to make a move")
             else:
-                # check the votes and move the robot accordingly
-                if vote_forward > vote_left and vote_forward > vote_right and vote_forward > 3:
-                    # if there is no object in front of the robot and there is a wall on the right, then go forward
+                if vote_forward > vote_not_forward and vote_forward > 4:
                     robot.moveForward(0.1)
-                elif vote_left > vote_forward and vote_left > vote_right and vote_left > 3:
+                    ready_to_move = False
+
+                else: 
+                #vote_left > vote_forward and vote_left > vote_right and vote_left > 3:
                     # if there is an object in front of the robot and to the right, then turn left
-                    robot.turnLeft()
-                    net_num_left_turns += 1
-                elif vote_right > vote_forward and vote_right > vote_left and vote_right > 3:
+                #    robot.turnLeft()
+                #    net_num_left_turns += 1
+                #elif vote_right > vote_forward and vote_right > vote_left and vote_right > 3:
                     # if there is no object in front of the robot and there is no wall on the right, then turn right
-                    robot.turnRight()
-                    net_num_left_turns -= 1
-                else:
-                    logging.error("No clear vote for next move, robot will move forward slightly")
-                    robot.moveForward(0.1)
+                #    robot.turnRight()
+                #    net_num_left_turns -= 1
+
+                    logging.error("Vote not made to move forward")
+                    # robot.moveForward(0.1)
 
                 server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
                 current_readings = []
