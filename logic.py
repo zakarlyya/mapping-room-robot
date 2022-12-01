@@ -112,7 +112,7 @@ def logic_main():
     # Set net number of turns to track where in room
     net_num_left_turns = 0
 
-    dist_in_front = 100
+    dist_in_front = 50
 
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
@@ -187,7 +187,7 @@ def logic_main():
                     if -20 < data[0] < 20:
                         dist_in_front = (0.25 * data[1]) + (1-0.25) * dist_in_front
                         logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
-                        if(dist_in_front < 15):
+                        if(dist_in_front < 20):
                             vote_not_forward += 1
                             vote_left += 1
                             logging.info("Object in front, not voting forward")
@@ -195,14 +195,16 @@ def logic_main():
             current_readings = []
 
             if vote_forward > vote_not_forward and vote_forward > 4:
-                robot.moveForward(1)
+                robot.moveForward(0.8)
                 ready_to_move = False
             elif vote_left > vote_right and vote_left > 4:
                 robot.turnLeft()
+                dist_in_front = 50
                 net_num_left_turns += 1
                 ready_to_move = False
             elif vote_right > vote_left and vote_right > 4:
                 robot.turnRight()
+                dist_in_front = 50
                 net_num_left_turns -= 1
                 ready_to_move = False
             elif dist_in_front > 30:
