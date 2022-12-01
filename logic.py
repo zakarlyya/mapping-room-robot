@@ -257,9 +257,12 @@ class Robot:
 
     # Distance is specified in inches
     def moveForward(self, time):
+        
+        # convert time to 2 decimal place string
+        str_time = "{:.2f}".format(time)
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
-        self.motor_socket.send(b"F" + str(time).encode())
+        self.motor_socket.send(b"F" + str_time.encode('utf-8'))
         # message = self.motor_socket.recv()
         # logging.info("Received reply to move from motors %s" % message)
 
