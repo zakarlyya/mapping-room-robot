@@ -66,11 +66,11 @@ if __name__ == "__main__":
     # create a ZMQ context and connect to PUB/SUB socket and subscribe to all messages
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    robot_ip_address = "localhost" # or "localhost"
+    robot_ip_address = "192.168.171.227" # or "localhost"
     #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
-    print("Connected")
+    print("Listening")
 
     # create graph widget, show, and start timer execution
     app = QtWidgets.QApplication([])
