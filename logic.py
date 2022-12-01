@@ -160,23 +160,18 @@ def logic_main():
         if motor_socket in socks and socks[motor_socket] == zmq.POLLIN:
             message = motor_socket.recv()
             logging.info("IN POLLER: Received motor reply %s" % message)
-            # if we have more than 50 current readings, ready_to_move is true
-            if len(current_readings) > 50:
-                ready_to_move = True
+            ready_to_move = True
 
         # if the robot is ready to move, move it
-        if ready_to_move:
+        if ready_to_move and len(current_readings) > 20:
             logging.info("Robot is ready to move")
             # In an effort to remove erroneous data points, each sensor reading is used as a "vote" for the next move
             vote_forward = 0
             vote_left = 0
             vote_right = 0
             vote_not_forward = 0
-            isData = 0
             # iterate through all the data in the current sensor data list
             for data in current_readings:
-                isData = 1
-
                 # if a measurement is made on the right 
                 if data[0] < -70:
                     #if data[1] > 15:
@@ -189,15 +184,11 @@ def logic_main():
                     vote_not_forward += 1
                     logging.info("Object in front, not voting forward")
                 
-            # if there is no data, move forward
-            if isData == 0:
-                logging.debug("No data retrieved from sensors... Waiting for next clock cycle to make a move")
-            else:
-                if vote_forward > vote_not_forward and vote_forward > 4:
-                    robot.moveForward(0.1)
-                    ready_to_move = False
+            if vote_forward > vote_not_forward and vote_forward > 4:
+                robot.moveForward(0.1)
+                ready_to_move = False
 
-                else: 
+            else: 
                 #vote_left > vote_forward and vote_left > vote_right and vote_left > 3:
                     # if there is an object in front of the robot and to the right, then turn left
                 #    robot.turnLeft()
@@ -207,13 +198,13 @@ def logic_main():
                 #    robot.turnRight()
                 #    net_num_left_turns -= 1
 
-                    logging.error("Decided not to move forward")
+                logging.error("Decided not to move forward")
                     # robot.moveForward(0.1)
 
-                server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
-                logging.info("Robot current position: %s" % robot.pos)
-                current_readings = []
-                ready_to_move = False
+            server_socket.send_string("{}, {},robot".format(robot.pos[0], robot.pos[1]))
+            logging.info("Robot current position: %s" % robot.pos)
+            current_readings = []
+            ready_to_move = False
             
 
 
