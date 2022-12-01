@@ -151,7 +151,7 @@ def logic_main():
                 # measured angle, and measured distance and then add the location to the positions list
                 point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
                 points.append(point)
-                logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (data[0], data[1], point))
+                logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
                 server_socket.send_string("{}, {},point".format(point[0], point[1]))
 
             socks = dict(poller.poll())
