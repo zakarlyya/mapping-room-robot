@@ -205,7 +205,8 @@ def logic_main():
             logging.info("Robot current position: %s" % robot.pos)
             current_readings = []
             ready_to_move = False
-            
+        else:
+            logging.info("Number of current readings: %s" % len(current_readings))
 
 
 class Robot:
