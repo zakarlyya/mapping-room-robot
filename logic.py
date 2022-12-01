@@ -84,6 +84,9 @@ def logic_main():
         logging.info("Received go signal from main")
 
     robot.turnLeft()
+    message = motor_socket.recv()
+    logging.info("IN LOGIC: Received motor reply %s" % message)
+    
     robot.dir = Direction.NORTH
     robot.pos = [0,0]
 
@@ -145,16 +148,15 @@ def logic_main():
             sensor_data = sensor_socket.recv_string()
             sensor_data = sensor_data.split(",")
             logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
+            current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
 
-            if(not disregard_data):
-                current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
-                if(float(sensor_data[1]) <= 40):
-                    # calculate the absolute position of the measured object using the robots current position,
-                    # measured angle, and measured distance and then add the location to the positions list
-                    point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
-                    points.append(point)
-                    logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
-                    server_socket.send_string("{}, {},point".format(point[0], point[1]))
+            if(not disregard_data and float(sensor_data[1]) <= 40):
+                # calculate the absolute position of the measured object using the robots current position,
+                # measured angle, and measured distance and then add the location to the positions list
+                point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
+                points.append(point)
+                logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
+                server_socket.send_string("{}, {},point".format(point[0], point[1]))
 
             socks = dict(poller.poll())
 
@@ -295,7 +297,7 @@ class Robot:
     def turnLeft(self):
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
-        self.motor_socket.send(b"L0.7")
+        self.motor_socket.send(b"L0.75")
         # message = self.motor_socket.recv()
         # logging.info("Received reply to turn from motors %s" % message)
 
@@ -311,7 +313,7 @@ class Robot:
     def turnRight(self):
 
         # transmit a message to the motors via zmq socket to turn right and wait for reply
-        self.motor_socket.send(b"R0.7")
+        self.motor_socket.send(b"R0.75")
         # message = self.motor_socket.recv()
         # logging.info("Received reply to turn from motors %s" % message)
 
