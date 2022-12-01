@@ -21,7 +21,6 @@ import logging
 import math
 import threading
 import time
-import queue
 import zmq
 
 from Ultrasonic import *
@@ -84,7 +83,7 @@ def logic_main():
         start_socket.send(b"Ack")
         logging.info("Received go signal from main")
 
-    # FIXME move forward until robot is certain distance away from wall
+    # TODO move forward until robot is a certain distance away from wall
 
     robot.turnLeft()
 
