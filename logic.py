@@ -204,9 +204,10 @@ def logic_main():
                 robot.turnRight()
                 net_num_left_turns -= 1
                 ready_to_move = False
-            elif dist_in_front > 15:
+            elif dist_in_front > 15 and len(current_readings) > 5:
                 logging.info("No clear decision, moving forward")
-                #robot.moveForward(0.1)
+                # Check that motor socket is available to recieve
+                robot.moveForward(0.1)
                 ready_to_move = False
 
             else: 
