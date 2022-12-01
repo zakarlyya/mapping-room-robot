@@ -33,7 +33,6 @@ def sensor_main():
         # get the average distance from the sensor using multiple readings to reduce noise
         distance = 0
         for i in range(num_trials):
-            time.sleep(0.05)
             distance += ultrasonic.get_distance()/num_trials
 
         # send the average distance measured for some angle

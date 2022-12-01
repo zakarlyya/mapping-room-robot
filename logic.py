@@ -83,10 +83,9 @@ def logic_main():
         start_socket.send(b"Ack")
         logging.info("Received go signal from main")
 
-    # TODO move forward until robot is a certain distance away from wall
-
     robot.turnLeft()
     robot.dir = Direction.NORTH
+    robot.pos = [0,0]
 
     sensor_thread = threading.Thread(target=sensor_main)
     sensor_thread.start()
@@ -240,6 +239,9 @@ class Robot:
             new_distance = new_distance + ultrasonic.get_distance()/50
 
         self.velocity = distance - new_distance
+
+        self.moveForward((new_distance - 7.5)/ self.velocity)
+
         return self.velocity
 
     # Distance is specified in inches
