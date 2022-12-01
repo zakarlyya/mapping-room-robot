@@ -112,7 +112,7 @@ def logic_main():
     # Set net number of turns to track where in room
     net_num_left_turns = 0
 
-    dist_in_front = 50
+    dist_in_front = 100
 
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
@@ -178,8 +178,6 @@ def logic_main():
                 if(data[1] < 40):
                     # if a measurement is made on the right 
                     if data[0] < -70:
-                        #if data[1] > 15:
-                            # TODO: we will have to use this to correct for DRIFT
                         vote_forward += 1
                         logging.info("Voted forward")
                     
@@ -191,6 +189,9 @@ def logic_main():
                             vote_not_forward += 1
                             vote_left += 1
                             logging.info("Object in front, not voting forward")
+                elif data[0] < -70:
+                    vote_right += 1
+                    logging.info("No object detected on the right, voting turn right")
 
             current_readings = []
 
@@ -199,12 +200,12 @@ def logic_main():
                 ready_to_move = False
             elif vote_left > vote_right and vote_left > 4:
                 robot.turnLeft()
-                dist_in_front = 50
+                dist_in_front = 100
                 net_num_left_turns += 1
                 ready_to_move = False
             elif vote_right > vote_left and vote_right > 4:
                 robot.turnRight()
-                dist_in_front = 50
+                dist_in_front = 100
                 net_num_left_turns -= 1
                 ready_to_move = False
             elif dist_in_front > 30:
