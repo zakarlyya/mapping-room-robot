@@ -204,7 +204,7 @@ def logic_main():
                 net_num_left_turns += 1
                 ready_to_move = False
             elif vote_right > vote_left and vote_right > 4:
-                robot.moveForward(0.5)
+                robot.moveForward(0.3)
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
 
@@ -212,7 +212,7 @@ def logic_main():
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
 
-                robot.moveForward(0.5)
+                robot.moveForward(0.7)
                 dist_in_front = 100
                 net_num_left_turns -= 1
                 ready_to_move = False
@@ -285,7 +285,7 @@ class Robot:
     def turnLeft(self):
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
-        self.motor_socket.send(b"L0.63")
+        self.motor_socket.send(b"L0.7")
         # message = self.motor_socket.recv()
         # logging.info("Received reply to turn from motors %s" % message)
 
