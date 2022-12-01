@@ -37,14 +37,20 @@ if __name__ == '__main__':
     sensor_socket.setsockopt(zmq.SUBSCRIBE, b"")
 
     while True:
-        sensor_data = sensor_socket.recv_string()
-        #sensor_data = randomData()
+        try:
+            print ("\nEnd of program")
+            sensor_data = sensor_socket.recv_string()
+            #sensor_data = randomData()
 
-        sensor_data = sensor_data.split(",")    # parse the sensor data as [angle], [distance]
+            sensor_data = sensor_data.split(",")    # parse the sensor data as [angle], [distance]
 
-        # calculate the absolute position of the measured object using the robots current position,
-        # measured angle, and measured distance and then add the location to the positions list
-        point = calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
-        print("{}, {},point".format(point[0], point[1]))
-        #sleep(0.1)
-        server_socket.send_string("{}, {},point".format(point[0], point[1]))
+            # calculate the absolute position of the measured object using the robots current position,
+            # measured angle, and measured distance and then add the location to the positions list
+            point = calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
+            print("{}, {},point".format(point[0], point[1]))
+            #sleep(0.1)
+            server_socket.send_string("{}, {},point".format(point[0], point[1]))
+        except KeyboardInterrupt:
+            print("Closeing server socket")
+            server_socket.close()
+        
