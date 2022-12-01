@@ -26,31 +26,25 @@ def sensor_main():
     pwm.setServoPwm('1', 92)
 
     # set default values including sensor angle and number of readings per angle
-    angle = 0
-    increasing = True
+    angle = -90
     num_trials = 2 
 
     while True:
         # get the average distance from the sensor using multiple readings to reduce noise
         distance = 0
         for i in range(num_trials):
-            time.sleep(0.1)
+            time.sleep(0.05)
             distance += ultrasonic.get_distance()/num_trials
 
         # send the average distance measured for some angle
         socket.send_string("{}, {}".format(angle, distance))
         
         # update the angle iteratively
-        if increasing:
-            angle = angle + 1.5
-        else:
-            angle = angle - 1.5
+        angle += 2
 
         # update increasing value to pan in other direction
-        if angle == 90:
-            increasing = False
-        elif angle == -90:
-            increasing = True
+        if angle > 90:
+            angle = -90
         
         # set the robot's head pan angle
         pwm.setServoPwm('0', 90 - angle)
