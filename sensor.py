@@ -27,13 +27,24 @@ def sensor_main():
 
     # set default values including sensor angle and number of readings per angle
     angle = -90
-    num_trials = 1
+    num_trials = 5
 
     while True:
         # get the average distance from the sensor using multiple readings to reduce noise
         distance = 0
+
+        # array which stores distances
+        distances = []
+
         for i in range(num_trials):
-            distance += ultrasonic.get_distance()/num_trials
+            distance.append(ultrasonic.getDistance())
+        
+        # remove outliers over 5 cm from the median distance
+        median = sorted(distances)[len(distances)//2]
+        distances = [x for x in distances if x < median + 5 and x > median - 5]
+
+        # get the average distance
+        distance = sum(distances)/len(distances)
 
         # send the average distance measured for some angle
         socket.send_string("{}, {}".format(angle, distance))
