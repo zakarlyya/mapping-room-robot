@@ -162,7 +162,7 @@ def logic_main():
             if(not disregard_data):
                 # calculate the absolute position of the measured object using the robots current position,
                 # measured angle, and measured distance and then add the location to the positions list
-                if(angle <= 20 and distance < 40):
+                if(angle <= 20 and distance < 30):
                     point = robot.calculateAbsolutePosition(angle, distance)
                     points.append(point)
                     # logging.info("Abs point: %s" % point)
