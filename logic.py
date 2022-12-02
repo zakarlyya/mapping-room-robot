@@ -204,6 +204,7 @@ def logic_main():
 
                         # if the measurement is 90 or 85, store the value for drift correction
                         if data[0] < -88:
+                            logging.info("APPEND VALUE %s" % str(data[1]))
                             measurements_at_90.append(data[1])
                     
                         # check if a measurement is made in front
@@ -228,7 +229,6 @@ def logic_main():
                 if(ENABLE_DRIFT_CORRECTION):
                     # If the robot has made at least 3 measurements at 90 degrees, check last 5 added values to determine if all the measurements are increasing or decreasing
                     if len(measurements_at_90) >= 3:
-                        logging.info("at least 3 values")
                         logging.info(measurements_at_90[-1])
                         logging.info(measurements_at_90[-2])
                         logging.info(measurements_at_90[-3])
