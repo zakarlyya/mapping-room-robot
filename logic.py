@@ -121,6 +121,7 @@ def logic_main():
     starting_wall = False           # track if robot is at starting wall
     ready_to_move = True            # track if robot is ready to move
     disregard_data = False          # track if data is useful
+    able_to_turn = False            # track if the robot is able to turn
     dist_in_front = 100             # track distance of wall in front
     net_num_left_turns = 0          # net number of turns to track where in room
     measurements_at_90 = []         # store measurements at 90 degrees for drift correction
@@ -243,9 +244,10 @@ def logic_main():
                             measurements_at_90 = []
 
                 robot.moveForward(0.8)
+                able_to_turn = True
                 ready_to_move = False
 
-            elif vote_left > vote_right and vote_left > 4:
+            elif able_to_turn and vote_left > vote_right and vote_left > 4:
                 if starting_wall:
                     mapping_done = True
                     break
@@ -258,7 +260,7 @@ def logic_main():
                 net_num_left_turns += 1
                 ready_to_move = False
 
-            elif vote_right > vote_left and vote_right > 4:
+            elif able_to_turn and vote_right > vote_left and vote_right > 4:
                 if starting_wall:
                     mapping_done = True
                     break
@@ -282,8 +284,7 @@ def logic_main():
 
             elif dist_in_front > 30:
                 logging.info("No clear decision, moving forward")
-                # Check that motor socket is available to recieve
-                robot.moveForward(0.2)
+                robot.moveForward(0.4)
                 ready_to_move = False
                 
             # empty the current readings for next iteration
