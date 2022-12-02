@@ -90,11 +90,15 @@ if __name__ == "__main__":
     socket.subscribe("")
     print("Listening for points")
 
-    # create graph widget, show, and start timer execution
-    app = QtWidgets.QApplication([])
-    pg.setConfigOptions(antialias=False)
-    win = MyWidget(socket)
-    win.show()
-    win.resize(600,600) 
-    win.raise_()
-    app.exec_()
+    try:
+        # create graph widget, show, and start timer execution
+        app = QtWidgets.QApplication([])
+        pg.setConfigOptions(antialias=False)
+        win = MyWidget(socket)
+        win.show()
+        win.resize(600,600) 
+        win.raise_()
+        app.exec_()
+    except KeyboardInterrupt:
+        print("Exiting")
+        
