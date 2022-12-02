@@ -363,8 +363,8 @@ class Robot:
         self.velocity = distance - new_distance
 
         # if robot is far from wall, move closer to wall
-        if(new_distance > 10):
-            self.moveForward((new_distance - 10) / self.velocity)
+        if(new_distance > 15):
+            self.moveForward((new_distance - 15) / self.velocity)
             message = self.motor_socket.recv()
             logging.info("Received message from motor socket: %s" % message)
 
