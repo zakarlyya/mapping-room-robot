@@ -41,7 +41,7 @@ class Direction(Enum):
 def logic_main():
     
     points = []             # structure which stores the coordinates of all points seen by the robot
-    num_readings = 55       # number of readings to be received from the sensor
+    num_readings = 110       # number of readings to be received from the sensor
     current_readings = []   # list of sensor readings (angle, distance) pairs
 
     # Create a zmq context
