@@ -37,7 +37,7 @@ def sensor_main():
         distances = []
 
         for i in range(num_trials):
-            distance.append(ultrasonic.getDistance())
+            distances.append(ultrasonic.getDistance())
         
         # remove outliers over 5 cm from the median distance
         median = sorted(distances)[len(distances)//2]
