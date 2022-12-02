@@ -39,7 +39,7 @@ def sensor_main():
         socket.send_string("{}, {}".format(angle, distance))
         
         # update the angle iteratively
-        angle += 1
+        angle += 2
 
         # update increasing value to pan in other direction
         if angle > 20:
