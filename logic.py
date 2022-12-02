@@ -33,7 +33,7 @@ from sensor import sensor_main
 FULL_LEFT_TURN = 1
 FULL_RIGHT_TURN = 1
 ENABLE_DRIFT_CORRECTION = True
-DRIFT_CORR_VAL = 0.3
+DRIFT_CORR_VAL = 0.1
 
 # define the cardinal values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
 class Direction(Enum):
