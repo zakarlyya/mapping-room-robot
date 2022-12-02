@@ -56,4 +56,6 @@ def sensor_main():
         
         # set the robot's head pan angle
         pwm.setServoPwm('0', 90 - angle)
+        if angle == 90:
+            time.sleep(0.2)
         
