@@ -30,6 +30,9 @@ from Ultrasonic import *
 from servo import *
 from sensor import sensor_main
 
+FULL_LEFT_TURN = 1
+FULL_RIGHT_TURN = 1
+
 # define the cardinal values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
 class Direction(Enum):
     NORTH = 0
@@ -37,14 +40,10 @@ class Direction(Enum):
     SOUTH = 2
     WEST = 3
 
-
-
 # define the main logic for the mapping
 def logic_main():
     
     ENABLE_DRIFT_CORRECTION = True
-    FULL_LEFT_TURN = 1
-    FULL_RIGHT_TURN = 1
     DRIFT_CORR_VAL = 0.1
 
     points = []             # structure which stores the coordinates of all points seen by the robot
@@ -100,7 +99,7 @@ def logic_main():
     robot.pos = [0,0]
 
     # start ultrasonic sensor thread
-    sensor_thread = threading.Thread(target=sensor_main)
+    sensor_thread = threading.Thread(target=sensor_main, daemon=True)
     sensor_thread.start()
 
     # create a zmq PUB/SUB sensor_socket to communicate with the sensors
