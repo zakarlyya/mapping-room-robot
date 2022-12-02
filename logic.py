@@ -33,7 +33,7 @@ from sensor import sensor_main
 FULL_LEFT_TURN = 1
 FULL_RIGHT_TURN = 1
 ENABLE_DRIFT_CORRECTION = True
-DRIFT_CORR_VAL = 0.5
+DRIFT_CORR_VAL = 0.3
 
 # define the cardinal values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
 class Direction(Enum):
@@ -203,7 +203,7 @@ def logic_main():
                         logging.info("Voted forward")
 
                         # if the measurement is 90 or 85, store the value for drift correction
-                        if data[0] == -90 or data[0] == -85:
+                        if data[0] == -90:
                             measurements_at_90.append(data[1])
                     
                         # check if a measurement is made in front
@@ -226,7 +226,10 @@ def logic_main():
                 # check if the robot's distance measurements on the right are drifting over time
                 # if they are, then turn toward or away from the wall by (DRIFT_CORR_VAL)
                 if(ENABLE_DRIFT_CORRECTION):
-                    
+                    logging.info("Drift correction: checking")
+                    logging.info(measurements_at_90[-1])
+                    logging.info(measurements_at_90[-2])
+                    logging.info(measurements_at_90[-3])
                     # If the robot has made at least 3 measurements at 90 degrees, check last 5 added values to determine if all the measurements are increasing or decreasing
                     if len(measurements_at_90) >= 3:
                         # if the measurements are increasing, turn away from the wall
