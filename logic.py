@@ -30,8 +30,8 @@ from Ultrasonic import *
 from servo import *
 from sensor import sensor_main
 
-FULL_LEFT_TURN = 0.5
-FULL_RIGHT_TURN = 0.5
+FULL_LEFT_TURN = 0.4
+FULL_RIGHT_TURN = 0.4
 ENABLE_DRIFT_CORRECTION = True
 DRIFT_CORR_VAL = 0.05
 
@@ -122,7 +122,7 @@ def logic_main():
     ready_to_move = True            # track if robot is ready to move
     disregard_data = False          # track if data is useful
     able_to_turn = False            # track if the robot is able to turn
-    dist_in_front = 60              # track distance of wall in front
+    dist_in_front = 50              # track distance of wall in front
     net_num_left_turns = 0          # net number of turns to track where in room
     measurements_at_90 = []         # store measurements at 90 degrees for drift correction
 
@@ -156,7 +156,7 @@ def logic_main():
             sensor_data = sensor_data.split(",")
             angle = float(sensor_data[0])
             distance = float(sensor_data[1])
-            logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
+            #logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
             current_readings.append([angle, distance])
 
             # if the data is useful, send the points over to the server to plot
@@ -171,7 +171,7 @@ def logic_main():
 
                 # if the measurement is 90 or 85, store the value for drift correction
                 if angle == -80:
-                    logging.info("APPEND VALUE %s" % str(distance))
+                    #logging.info("APPEND VALUE %s" % str(distance))
                     measurements_at_90.append(distance)
 
             # poll the socket again
@@ -209,7 +209,7 @@ def logic_main():
                         #logging.info("Voted forward")
                     
                     # check if a measurement is made in front
-                    if -20 < data[0] < 20:
+                    if -20 < data[0] < 20 and data[1] > 30:
                         dist_in_front = (0.5 * data[1]) + (1-0.5) * dist_in_front
                         #logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
                         if(dist_in_front < 20):
@@ -280,7 +280,7 @@ def logic_main():
                 # clear drift correction measurements
                 measurements_at_90 = []
 
-                dist_in_front = 60
+                dist_in_front = 50
                 net_num_left_turns += 1
                 ready_to_move = False
                 able_to_turn = False
@@ -303,7 +303,7 @@ def logic_main():
 
                 # clear drift correction measurements
                 measurements_at_90 = []
-                dist_in_front = 60
+                dist_in_front = 50
                 net_num_left_turns -= 1
                 ready_to_move = False
                 able_to_turn = False

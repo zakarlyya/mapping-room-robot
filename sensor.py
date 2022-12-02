@@ -27,7 +27,7 @@ def sensor_main():
 
     # set default values including sensor angle and number of readings per angle
     angle = -90
-    num_trials = 3
+    num_trials = 5
 
     while True:
         # array which stores distances
