@@ -297,8 +297,6 @@ def logic_main():
     start_socket.close()
     sensor_socket.close()
 
-    sensor_thread.join()
-    
 
 # Robot class that tracks the current position, direction, velocity, and movement 
 class Robot:
