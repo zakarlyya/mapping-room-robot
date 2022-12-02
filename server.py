@@ -37,8 +37,8 @@ class MyWidget(pg.GraphicsLayoutWidget):
         # add scatter plot to window along with grid and label for axis
         self.plotItem = self.addPlot(title="Ultrasonic points")
         self.plotItem.showGrid(x=True, y=True)
-        self.plotItem.setLabel('left', units="cm")
-        self.plotItem.setLabel('bottom', units="cm")
+        self.plotItem.setLabel('left', units="m")
+        self.plotItem.setLabel('bottom', units="m")
         self.plotItem.setAspectLocked()
         self.plotItem.setAutoVisible(x=True, y=True)
 
@@ -64,26 +64,29 @@ class MyWidget(pg.GraphicsLayoutWidget):
             self.y = np.append(self.y, float(data[1]))
             self.plotPoint.setData(self.x, self.y)  
         elif(data[2] == "robot"):
-            self.robotX = float(data[0])
-            self.robotY = float(data[1])
-            self.plotRobot.setData([self.robotX], [self.robotY])
+            self.robotX = float(data[0]/100)
+            self.robotY = float(data[1]/100)
+            self.plotRobot.setData([self.robotX/100], [self.robotY/100])
             
 
 if __name__ == "__main__":
     # create a ZMQ context and connect to PUB/SUB socket and subscribe to all messages
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    robot_ip_address = "192.168.171.227"
+    robot_ip_address = "192.168.119.227"
     #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
     print("Listening")
 
-    # create graph widget, show, and start timer execution
-    app = QtWidgets.QApplication([])
-    pg.setConfigOptions(antialias=False)
-    win = MyWidget(socket)
-    win.show()
-    win.resize(600,600) 
-    win.raise_()
-    app.exec_()
+    try:
+        # create graph widget, show, and start timer execution
+        app = QtWidgets.QApplication([])
+        pg.setConfigOptions(antialias=False)
+        win = MyWidget(socket)
+        win.show()
+        win.resize(600,600) 
+        win.raise_()
+        app.exec_()
+    except KeyboardInterrupt: 
+        print("Exiting")
