@@ -84,6 +84,6 @@ if __name__ == "__main__":
     pg.setConfigOptions(antialias=False)
     win = MyWidget(socket)
     win.show()
-    win.resize(800,800) 
+    win.resize(600,600) 
     win.raise_()
     app.exec_()

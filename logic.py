@@ -253,12 +253,20 @@ def logic_main():
             # empty the current readings for next iteration
             current_readings = []
 
-    
-    logging.info("Mapping complete")
+    # close all the sockets
     motor_socket.close()
     server_socket.close()
     start_socket.close()
     sensor_socket.close()
+    
+    # save the points to a file
+    with open('points.txt', 'w') as f:
+        for point in points:
+            f.write(point)
+            f.write('\n')
+        
+    # mapping is complete and data is saved
+    logging.info("Mapping complete, points saved to points.txt")
 
 # Robot class that tracks the current position, direction, velocity, and movement 
 class Robot:
