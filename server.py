@@ -60,13 +60,13 @@ class MyWidget(pg.GraphicsLayoutWidget):
 
         # add data to set of points or update robot position then update the plot
         if(data[2] == "point"):
-            self.x = np.append(self.x, float(data[0]))
-            self.y = np.append(self.y, float(data[1]))
+            self.x = np.append(self.x, float(data[0])/100)
+            self.y = np.append(self.y, float(data[1])/100)
             self.plotPoint.setData(self.x, self.y)  
         elif(data[2] == "robot"):
-            self.robotX = float(data[0]/100)
-            self.robotY = float(data[1]/100)
-            self.plotRobot.setData([self.robotX/100], [self.robotY/100])
+            self.robotX = float(data[0])/100
+            self.robotY = float(data[1])/100
+            self.plotRobot.setData([self.robotX], [self.robotY])
             
 
 if __name__ == "__main__":
