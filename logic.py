@@ -32,6 +32,8 @@ from sensor import sensor_main
 
 FULL_LEFT_TURN = 1
 FULL_RIGHT_TURN = 1
+ENABLE_DRIFT_CORRECTION = True
+DRIFT_CORR_VAL = 0.3
 
 # define the cardinal values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
 class Direction(Enum):
@@ -42,9 +44,6 @@ class Direction(Enum):
 
 # define the main logic for the mapping
 def logic_main():
-    
-    ENABLE_DRIFT_CORRECTION = True
-    DRIFT_CORR_VAL = 0.1
 
     points = []             # structure which stores the coordinates of all points seen by the robot
     num_readings = 55       # number of readings to be received from the sensor
