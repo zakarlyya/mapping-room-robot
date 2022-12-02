@@ -69,16 +69,19 @@ class MyWidget(pg.GraphicsLayoutWidget):
                 self.robotY = float(data[1])/100
                 self.plotRobot.setData([self.robotX], [self.robotY])
             elif(data[2] == "done"):
-                self.timer.killTimer()
+                self.timer.stop()
+                self.timer.killTimer(self.timer.timerId())
                 self.socket.close()
                 print("Done mapping")
                 input("Press Enter to exit")
                 self.close()
                 return
         except KeyboardInterrupt:
-            self.timer.disconnect()
+            self.timer.stop()
+            self.timer.killTimer(self.timer.timerId())
             self.socket.close()
             print("Exiting")
+            self.close()
             exit()
             
 
