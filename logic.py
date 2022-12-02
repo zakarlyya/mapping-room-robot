@@ -301,7 +301,7 @@ def logic_main():
     # save the points to a file
     with open('points.txt', 'w') as f:
         for point in points:
-            f.write(point)
+            f.write(str(point))
             f.write('\n')
         
     # mapping is complete and data is saved
