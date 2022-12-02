@@ -71,6 +71,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
             elif(data[2] == "done"):
                 self.timer.disconnect()
                 self.socket.close()
+                self.close()
                 print("Done mapping")
                 input("Press Enter to exit")
                 return

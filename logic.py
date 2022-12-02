@@ -160,10 +160,10 @@ def logic_main():
             current_readings.append([angle, distance])
 
             # if the data is useful, send the points over to the server to plot
-            if(not disregard_data and distance <= 50):
+            if(not disregard_data):
                 # calculate the absolute position of the measured object using the robots current position,
                 # measured angle, and measured distance and then add the location to the positions list
-                if(angle <= 20 or distance < 30):
+                if(angle <= 20 or distance < 40):
                     point = robot.calculateAbsolutePosition(angle, distance)
                     points.append(point)
                     # logging.info("Abs point: %s" % point)
@@ -212,7 +212,7 @@ def logic_main():
                     if -20 < data[0] < 20 and data[1] < 30:
                         dist_in_front = (0.5 * data[1]) + (1-0.5) * dist_in_front
                         #logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
-                        if(dist_in_front < 20):
+                        if(dist_in_front < 30):
                             vote_not_forward += 1
                             vote_left += 1
                             #logging.info("Object in front, not voting forward")
@@ -237,33 +237,33 @@ def logic_main():
                         # if the measurements are increasing, turn toward the wall
                         if diff_one > -0.5 and diff_two > -0.5 and diff_one < 0 and diff_two < 0:
                             logging.info("Small drift correction: turning toward from wall")
-                            robot.turnLeft(DRIFT_CORR_VAL/2)
+                            robot.turnLeft(DRIFT_CORR_VAL*0.5)
                             motor_socket.recv()
                             measurements_at_90 = []
                         # if the measurements are decreasing, turn away from the wall
                         elif diff_one < 0.5 and diff_two < 0.5 and diff_one > 0 and diff_two > 0:
                             logging.info("Small drift correction: turning away from wall")
-                            robot.turnRight(DRIFT_CORR_VAL/2)
+                            robot.turnRight(DRIFT_CORR_VAL*0.5)
                             motor_socket.recv()
                             measurements_at_90 = []
                         elif 1 > diff_one > 0.5 and 1 > diff_two > 0.5:
                             logging.info("Medium drift correction: turning away from wall")
-                            robot.turnRight(DRIFT_CORR_VAL)
+                            robot.turnRight(DRIFT_CORR_VAL*0.75)
                             motor_socket.recv()
                             measurements_at_90 = []
                         elif -1 < diff_one < -0.5 and -1 < diff_two < -0.5:
                             logging.info("Medium drift correction: turning toward from wall")
-                            robot.turnLeft(DRIFT_CORR_VAL)
+                            robot.turnLeft(DRIFT_CORR_VAL*0.75)
                             motor_socket.recv()
                             measurements_at_90 = []
                         elif diff_one < -1 and diff_two < -1:
                             logging.info("Large drift correction: turning toward from wall")
-                            robot.turnLeft(DRIFT_CORR_VAL*2)
+                            robot.turnLeft(DRIFT_CORR_VAL)
                             motor_socket.recv()
                             measurements_at_90 = []
                         elif diff_one > 1 and diff_two > 1:
                             logging.info("Large drift correction: turning away from wall")
-                            robot.turnRight(DRIFT_CORR_VAL*2)
+                            robot.turnRight(DRIFT_CORR_VAL)
                             motor_socket.recv()
                             measurements_at_90 = []
 
