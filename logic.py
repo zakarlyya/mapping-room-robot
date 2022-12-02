@@ -200,25 +200,25 @@ def logic_main():
                     # if a measurement is made on the right 
                     if data[0] < -60:
                         vote_forward += 1
-                        logging.info("Voted forward")
+                        #logging.info("Voted forward")
 
                         # if the measurement is 90 or 85, store the value for drift correction
-                        if data[0] == -90:
+                        if data[0] < -88:
                             measurements_at_90.append(data[1])
                     
                         # check if a measurement is made in front
                     if -20 < data[0] < 20:
                         dist_in_front = (0.4 * data[1]) + (1-0.4) * dist_in_front
-                        logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
+                        #logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
                         if(dist_in_front < 20):
                             vote_not_forward += 1
                             vote_left += 1
-                            logging.info("Object in front, not voting forward")
+                            #logging.info("Object in front, not voting forward")
 
                 # if the measurement is more than 30 away and angle is facing right
                 elif data[0] < -60:
                     vote_right += 1
-                    logging.info("No object detected on the right, voting turn right")
+                    #logging.info("No object detected on the right, voted turn right")
 
             # compare votes for the next move and act accordingly
             if vote_forward > vote_not_forward and vote_forward > 4:
@@ -226,9 +226,9 @@ def logic_main():
                 # check if the robot's distance measurements on the right are drifting over time
                 # if they are, then turn toward or away from the wall by (DRIFT_CORR_VAL)
                 if(ENABLE_DRIFT_CORRECTION):
-                    logging.info("Drift correction: checking")
                     # If the robot has made at least 3 measurements at 90 degrees, check last 5 added values to determine if all the measurements are increasing or decreasing
                     if len(measurements_at_90) >= 3:
+                        logging.info("at least 3 values")
                         logging.info(measurements_at_90[-1])
                         logging.info(measurements_at_90[-2])
                         logging.info(measurements_at_90[-3])
