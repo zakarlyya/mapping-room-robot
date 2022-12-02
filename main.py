@@ -5,16 +5,13 @@
 # Waits for the threads
 # Terminates
 
+# import necessary libraries
 import threading
-import time
-import queue
 import logging
-import sys
 import zmq
 
-# import logic.py
+# import logic.py and motors.py
 from logic import logic_main
-# import motors.py
 from motors import motors_main
 
 if __name__ == '__main__':
@@ -60,29 +57,6 @@ if __name__ == '__main__':
             break
         else:
             logging.info("Unknown command: %s" % message)
-
-    '''
-    # create REQ/REP socket to communicate with server
-    server_context = zmq.Context()
-    server_socket = server_context.socket(zmq.REQ)
-    server_socket.connect("tcp://localhost:5558")
-
-    # wait for server to send message to start then send start signal to logic thread
-    while True:
-        message = server_socket.recv()
-        logging.info("Received start signal from server: %s" % message)
-        if message == b"START":
-            logic_socket.send(b"START")
-            logic_socket.recv()
-            break
-        if message == b"STOP":
-            logic_socket.send(b"STOP")
-            logic_socket.recv()
-            break
-
-        # Reply to server
-        server_socket.send(b"ACK")
-    '''
 
     # join threads
     logic_thread.join()
