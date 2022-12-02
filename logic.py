@@ -163,7 +163,7 @@ def logic_main():
             if(not disregard_data):
                 # calculate the absolute position of the measured object using the robots current position,
                 # measured angle, and measured distance and then add the location to the positions list
-                if(angle <= 20 and distance < 50):
+                if(angle <= 20 and distance < 40):
                     point = robot.calculateAbsolutePosition(angle, distance)
                     points.append(point)
                     # logging.info("Abs point: %s" % point)
@@ -209,7 +209,7 @@ def logic_main():
                         #logging.info("Voted forward")
                     
                     # check if a measurement is made in front
-                    if -20 < data[0] < 20 and data[1] < 15:
+                    if -20 < data[0] < 20 and data[1] < 25:
                         vote_not_forward += 1
                         vote_left += 1
                         #logging.info("Object in front, not voting forward")
