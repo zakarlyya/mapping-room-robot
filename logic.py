@@ -209,7 +209,7 @@ def logic_main():
                         #logging.info("Voted forward")
                     
                     # check if a measurement is made in front
-                    if -20 < data[0] < 20 and data[1] > 30:
+                    if -20 < data[0] < 20 and data[1] < 30:
                         dist_in_front = (0.5 * data[1]) + (1-0.5) * dist_in_front
                         #logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
                         if(dist_in_front < 20):
