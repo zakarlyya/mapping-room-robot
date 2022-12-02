@@ -227,11 +227,11 @@ def logic_main():
                 # if they are, then turn toward or away from the wall by (DRIFT_CORR_VAL)
                 if(ENABLE_DRIFT_CORRECTION):
                     logging.info("Drift correction: checking")
-                    logging.info(measurements_at_90[-1])
-                    logging.info(measurements_at_90[-2])
-                    logging.info(measurements_at_90[-3])
                     # If the robot has made at least 3 measurements at 90 degrees, check last 5 added values to determine if all the measurements are increasing or decreasing
                     if len(measurements_at_90) >= 3:
+                        logging.info(measurements_at_90[-1])
+                        logging.info(measurements_at_90[-2])
+                        logging.info(measurements_at_90[-3])
                         # if the measurements are increasing, turn away from the wall
                         if measurements_at_90[-1] > measurements_at_90[-2] > measurements_at_90[-3]:
                             logging.info("Drift correction: turning away from wall")
