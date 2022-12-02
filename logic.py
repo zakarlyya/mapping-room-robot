@@ -22,15 +22,11 @@ import math
 import threading
 import time
 import zmq
+from enum import Enum
 
 from Ultrasonic import *
 from servo import *
 from sensor import sensor_main
-
-from enum import Enum
-
-# Import motor class from motor_class.py
-from motor_class import Motor
 
 # define the values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
 class Direction(Enum):
@@ -41,11 +37,9 @@ class Direction(Enum):
 
 def logic_main():
     
-    # create a data structure which stores the coordinates of all points visited by the robot
-    points = []  # list of lists
-
-    # number of readings to be received from the sensor
-    num_readings = 55
+    points = []             # structure which stores the coordinates of all points seen by the robot
+    num_readings = 55       # number of readings to be received from the sensor
+    current_readings = []   # list of sensor readings (angle, distance) pairs
 
     # Create a zmq context
     context = zmq.Context()
@@ -79,13 +73,16 @@ def logic_main():
         start_socket.send(b"Ack")
         logging.info("Received go signal from main")
 
+    # turn to face the wall and wait for motor to finish
     robot.turnLeft()
     message = motor_socket.recv()
     logging.info("IN LOGIC: Received motor reply %s" % message)
     
+    # set the robot direction and position
     robot.dir = Direction.EAST
     robot.pos = [0,0]
 
+    # start ultrasonic sensor thread
     sensor_thread = threading.Thread(target=sensor_main)
     sensor_thread.start()
 
@@ -104,21 +101,15 @@ def logic_main():
     poller.register(sensor_socket, zmq.POLLIN)
     poller.register(motor_socket, zmq.POLLIN)
 
-    # create a mapping_done flag
-    mapping_done = False
-    # Create a ready_to_move flag
-    ready_to_move = True
-    # Set net number of turns to track where in room
-    net_num_left_turns = 0
-
-    dist_in_front = 100
-
-    disregard_data = False
+    # create relevant flags and variables
+    mapping_done = False        # track if mapping is done
+    ready_to_move = True        # track if robot is ready to move
+    net_num_left_turns = 0      # net number of turns to track where in room
+    dist_in_front = 100         # track distance of wall in front
+    disregard_data = False      # track if data is useful
 
     # Log that we are beginning mapping
     logging.info("Beginning mapping")
-
-    current_readings = []           # list of sensor readings
 
     # until the robot receieves a STOP signal from start socket or mapping_done flag is set, loop
     while not mapping_done:
@@ -139,17 +130,20 @@ def logic_main():
             else:
                 logging.ERROR("Received unknown stop signal from main: %s" % message)
 
+        # receive an entire panning of sensor readings
         while sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN and len(current_readings) < num_readings:
             # receive and parse the sensor data as [angle], [distance]
             sensor_data = sensor_socket.recv_string()
             sensor_data = sensor_data.split(",")
+            angle = float(sensor_data[0])
+            distance = float(sensor_data[1])
             logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
-            current_readings.append([float(sensor_data[0]), float(sensor_data[1])])
+            current_readings.append([angle, distance])
 
-            if(not disregard_data and float(sensor_data[1]) <= 40):
+            if(not disregard_data and float(distance) <= 40):
                 # calculate the absolute position of the measured object using the robots current position,
                 # measured angle, and measured distance and then add the location to the positions list
-                point = robot.calculateAbsolutePosition(float(sensor_data[0]), float(sensor_data[1]))
+                point = robot.calculateAbsolutePosition(angle, distance)
                 points.append(point)
                 logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
                 server_socket.send_string("{}, {},point".format(point[0], point[1]))
@@ -195,18 +189,22 @@ def logic_main():
                             vote_not_forward += 1
                             vote_left += 1
                             logging.info("Object in front, not voting forward")
+                # if the measurement is more than 30 away and angle is facing right
                 elif data[0] < -60:
                     vote_right += 1
                     logging.info("No object detected on the right, voting turn right")
 
+            # compare votes and act accordingly
             if vote_forward > vote_not_forward and vote_forward > 4:
                 robot.moveForward(0.8)
                 ready_to_move = False
+
             elif vote_left > vote_right and vote_left > 4:
                 robot.turnLeft()
                 dist_in_front = 100
                 net_num_left_turns += 1
                 ready_to_move = False
+
             elif vote_right > vote_left and vote_right > 4:
                 disregard_data = True
                 robot.moveForward(0.5)
@@ -222,6 +220,7 @@ def logic_main():
                 dist_in_front = 100
                 net_num_left_turns -= 1
                 ready_to_move = False
+
             elif dist_in_front > 30:
                 logging.info("No clear decision, moving forward")
                 # Check that motor socket is available to recieve
@@ -229,7 +228,6 @@ def logic_main():
                 ready_to_move = False
                 
             current_readings = []
-
 
 class Robot:
     def __init__(self, motor_socket, pos=[0,0], dir=[Direction.EAST]):
