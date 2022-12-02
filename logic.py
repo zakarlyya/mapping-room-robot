@@ -17,6 +17,7 @@
 #
 # Terminate when robot comes back to 0,0
 
+# import necessary libraries
 import logging
 import math
 import threading
@@ -24,17 +25,19 @@ import time
 import zmq
 from enum import Enum
 
+# import class components
 from Ultrasonic import *
 from servo import *
 from sensor import sensor_main
 
-# define the values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
+# define the cardinal values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
 class Direction(Enum):
     NORTH = 0
     EAST = 1
     SOUTH = 2
     WEST = 3
 
+# define the main logic for the mapping
 def logic_main():
     
     points = []             # structure which stores the coordinates of all points seen by the robot
@@ -48,7 +51,7 @@ def logic_main():
     start_socket = context.socket(zmq.REP)
     start_socket.bind("tcp://*:5557")
 
-    # wait for the start signal on start socket
+    # wait for the start signal from main.py on start socket
     while True:
         message = start_socket.recv()
         if message == b"START":
@@ -61,19 +64,19 @@ def logic_main():
     motor_socket = context.socket(zmq.REQ)
     motor_socket.connect("tcp://localhost:5555")
     
-    # create instance of Robot class and calibrate 
+    # create instance of Robot class and calibrate velcity
     robot = Robot(motor_socket=motor_socket)
     velocity = robot.calibrateMotors()
     logging.info("Calibrated motors. Calculated velocity: %s" % velocity)
 
-    # Wait for go from main
+    # Wait for GO signal from main.py
     start_socket.send(b"GO")
     message = start_socket.recv()
     if message == b"GO":
         start_socket.send(b"Ack")
         logging.info("Received go signal from main")
 
-    # turn to face the wall and wait for motor to finish
+    # turn to face the wall and wait for the motors to finish moving
     robot.turnLeft()
     message = motor_socket.recv()
     logging.info("IN LOGIC: Received motor reply %s" % message)
@@ -101,18 +104,19 @@ def logic_main():
     poller.register(sensor_socket, zmq.POLLIN)
     poller.register(motor_socket, zmq.POLLIN)
 
-    # create relevant flags and variables
+    # declare the relevant flags and variables
     mapping_done = False        # track if mapping is done
     ready_to_move = True        # track if robot is ready to move
     net_num_left_turns = 0      # net number of turns to track where in room
     dist_in_front = 100         # track distance of wall in front
     disregard_data = False      # track if data is useful
 
-    # Log that we are beginning mapping
+    # Log that we are starting
     logging.info("Beginning mapping")
 
-    # until the robot receieves a STOP signal from start socket or mapping_done flag is set, loop
+    # Loop until the robot receieves a STOP signal from start socket or mapping_done flag is set, loop
     while not mapping_done:
+        # poll the sockets
         socks = dict(poller.poll())
 
         # mapping_done if robot net_num_left_turns is 4
@@ -140,6 +144,7 @@ def logic_main():
             logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
             current_readings.append([angle, distance])
 
+            # if the data is useful, send the points over to the server to plot
             if(not disregard_data and float(distance) <= 40):
                 # calculate the absolute position of the measured object using the robots current position,
                 # measured angle, and measured distance and then add the location to the positions list
@@ -148,6 +153,7 @@ def logic_main():
                 logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
                 server_socket.send_string("{}, {},point".format(point[0], point[1]))
 
+            # poll the socket again
             socks = dict(poller.poll())
 
         # if motor_socket has a reply, set ready_to_move to true
@@ -189,6 +195,7 @@ def logic_main():
                             vote_not_forward += 1
                             vote_left += 1
                             logging.info("Object in front, not voting forward")
+
                 # if the measurement is more than 30 away and angle is facing right
                 elif data[0] < -60:
                     vote_right += 1
@@ -227,37 +234,45 @@ def logic_main():
                 robot.moveForward(0.2)
                 ready_to_move = False
                 
+            # empty the current readings for next iteration
             current_readings = []
 
+# Robot class that tracks the current position, direction, velocity, and movement 
 class Robot:
+    # initialize the variables: position, direction, velocity, and motor socket
     def __init__(self, motor_socket, pos=[0,0], dir=[Direction.EAST]):
         self.pos = pos
         self.dir = dir
         self.velocity = 1
         self.motor_socket = motor_socket
 
+    # calibrate the robot velocity and move to the wall
     def calibrateMotors(self):
         pwm=Servo()
         ultrasonic=Ultrasonic()   
-        
         time.sleep(1)
 
+        # get the current distance from wall
         distance = 0
         for i in range(50):
             distance = distance + ultrasonic.get_distance()/50
 
+        # move for one second
         self.moveForward(1)
         message = self.motor_socket.recv()
         logging.info("Received message from motor socket: %s" % message)
 
+        # get the new distance from wall
         new_distance = 0
         for i in range(50):
             new_distance = new_distance + ultrasonic.get_distance()/50
 
+        # calculate velocity in cm/s as difference in distance over time (1 second)
         self.velocity = distance - new_distance
 
+        # if robot is far from wall, move closer to wall
         if(new_distance > 10):
-            self.moveForward((new_distance - 10)/ self.velocity)
+            self.moveForward((new_distance - 10) / self.velocity)
             message = self.motor_socket.recv()
             logging.info("Received message from motor socket: %s" % message)
 
@@ -285,7 +300,6 @@ class Robot:
         # if the robot is facing west, update the x coordinate of the robot position
         elif self.dir == Direction.WEST:
             self.pos[0] = self.pos[0] - distance
-
 
     def turnLeft(self):
 
