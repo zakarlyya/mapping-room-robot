@@ -122,7 +122,7 @@ def logic_main():
     ready_to_move = True            # track if robot is ready to move
     disregard_data = False          # track if data is useful
     able_to_turn = False            # track if the robot is able to turn
-    dist_in_front = 100             # track distance of wall in front
+    dist_in_front = 60              # track distance of wall in front
     net_num_left_turns = 0          # net number of turns to track where in room
     measurements_at_90 = []         # store measurements at 90 degrees for drift correction
 
@@ -160,10 +160,10 @@ def logic_main():
             current_readings.append([angle, distance])
 
             # if the data is useful, send the points over to the server to plot
-            if(not disregard_data and distance <= 40):
+            if(not disregard_data and distance <= 50):
                 # calculate the absolute position of the measured object using the robots current position,
                 # measured angle, and measured distance and then add the location to the positions list
-                if(angle < 30 or distance < 30):
+                if(angle <= 20 or distance < 30):
                     point = robot.calculateAbsolutePosition(angle, distance)
                     points.append(point)
                     # logging.info("Abs point: %s" % point)
@@ -280,7 +280,7 @@ def logic_main():
                 # clear drift correction measurements
                 measurements_at_90 = []
 
-                dist_in_front = 100
+                dist_in_front = 60
                 net_num_left_turns += 1
                 ready_to_move = False
                 able_to_turn = False
@@ -303,7 +303,7 @@ def logic_main():
 
                 # clear drift correction measurements
                 measurements_at_90 = []
-                dist_in_front = 100
+                dist_in_front = 60
                 net_num_left_turns -= 1
                 ready_to_move = False
                 able_to_turn = False
