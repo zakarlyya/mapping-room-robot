@@ -37,9 +37,16 @@ class Direction(Enum):
     SOUTH = 2
     WEST = 3
 
+
+
 # define the main logic for the mapping
 def logic_main():
     
+    ENABLE_DRIFT_CORRECTION = True
+    FULL_LEFT_TURN = 1
+    FULL_RIGHT_TURN = 1
+    DRIFT_CORR_VAL = 0.1
+
     points = []             # structure which stores the coordinates of all points seen by the robot
     num_readings = 55       # number of readings to be received from the sensor
     current_readings = []   # list of sensor readings (angle, distance) pairs
@@ -110,12 +117,13 @@ def logic_main():
     poller.register(motor_socket, zmq.POLLIN)
 
     # declare the relevant flags and variables
-    mapping_done = False        # track if mapping is done
-    starting_wall = False       # track if robot is at starting wall
-    ready_to_move = True        # track if robot is ready to move
-    net_num_left_turns = 0      # net number of turns to track where in room
-    dist_in_front = 100         # track distance of wall in front
-    disregard_data = False      # track if data is useful
+    mapping_done = False            # track if mapping is done
+    starting_wall = False           # track if robot is at starting wall
+    ready_to_move = True            # track if robot is ready to move
+    disregard_data = False          # track if data is useful
+    dist_in_front = 100             # track distance of wall in front
+    net_num_left_turns = 0          # net number of turns to track where in room
+    measurements_at_90 = []         # store measurements at 90 degrees for drift correction
 
     # Log that we are starting
     logging.info("Beginning mapping")
@@ -193,6 +201,10 @@ def logic_main():
                     if data[0] < -60:
                         vote_forward += 1
                         logging.info("Voted forward")
+
+                        # if the measurement is 90 or 85, store the value for drift correction
+                        if data[0] == -90 or data[0] == -85:
+                            measurements_at_90.append(data[1])
                     
                         # check if a measurement is made in front
                     if -20 < data[0] < 20:
@@ -208,8 +220,26 @@ def logic_main():
                     vote_right += 1
                     logging.info("No object detected on the right, voting turn right")
 
-            # compare votes and act accordingly
+            # compare votes for the next move and act accordingly
             if vote_forward > vote_not_forward and vote_forward > 4:
+
+                # check if the robot's distance measurements on the right are drifting over time
+                # if they are, then turn toward or away from the wall by (DRIFT_CORR_VAL)
+                if(ENABLE_DRIFT_CORRECTION):
+                    
+                    # If the robot has made at least 3 measurements at 90 degrees, check last 5 added values to determine if all the measurements are increasing or decreasing
+                    if len(measurements_at_90) >= 3:
+                        # if the measurements are increasing, turn away from the wall
+                        if measurements_at_90[-1] > measurements_at_90[-2] > measurements_at_90[-3]:
+                            logging.info("Drift correction: turning away from wall")
+                            robot.turnLeft(DRIFT_CORR_VAL)
+                            motor_socket.recv()
+                        # if the measurements are decreasing, turn toward the wall
+                        elif measurements_at_90[-1] < measurements_at_90[-2] < measurements_at_90[-3]:
+                            logging.info("Drift correction: turning toward wall")
+                            robot.turnRight(DRIFT_CORR_VAL)
+                            motor_socket.recv()
+
                 robot.moveForward(0.8)
                 ready_to_move = False
 
@@ -218,6 +248,10 @@ def logic_main():
                     mapping_done = True
                     break
                 robot.turnLeft()
+
+                # clear drift correction measurements
+                measurements_at_90 = []
+
                 dist_in_front = 100
                 net_num_left_turns += 1
                 ready_to_move = False
@@ -238,6 +272,8 @@ def logic_main():
 
                 robot.moveForward(1)
 
+                # clear drift correction measurements
+                measurements_at_90 = []
                 dist_in_front = 100
                 net_num_left_turns -= 1
                 ready_to_move = False
@@ -313,10 +349,10 @@ class Robot:
         elif self.dir == Direction.WEST:
             self.pos[0] = self.pos[0] - distance
 
-    def turnLeft(self):
+    def turnLeft(self, turn=FULL_LEFT_TURN):
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
-        self.motor_socket.send(b"L1")
+        self.motor_socket.send(b"L" + str(turn).encode())
 
         if self.dir == Direction.NORTH:
             self.dir = Direction.WEST
@@ -327,10 +363,10 @@ class Robot:
         elif self.dir == Direction.EAST:
             self.dir = Direction.NORTH
 
-    def turnRight(self):
+    def turnRight(self, turn=FULL_RIGHT_TURN):
 
-        # transmit a message to the motors via zmq socket to turn right and wait for reply
-        self.motor_socket.send(b"R1")
+        # transmit a message to the motors via zmq socket "R[turn]" and wait for reply
+        self.motor_socket.send(b"R" + str(turn).encode())
 
         if self.dir == Direction.NORTH:
             self.dir = Direction.EAST
