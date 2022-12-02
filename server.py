@@ -69,7 +69,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
                 self.robotY = float(data[1])/100
                 self.plotRobot.setData([self.robotX], [self.robotY])
             elif(data[2] == "done"):
-                self.timer.disconnect()
+                self.timer.killTimer()
                 self.socket.close()
                 self.close()
                 print("Done mapping")

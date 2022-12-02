@@ -122,7 +122,6 @@ def logic_main():
     ready_to_move = True            # track if robot is ready to move
     disregard_data = False          # track if data is useful
     able_to_turn = False            # track if the robot is able to turn
-    dist_in_front = 50              # track distance of wall in front
     net_num_left_turns = 0          # net number of turns to track where in room
     measurements_at_90 = []         # store measurements at 90 degrees for drift correction
 
@@ -209,7 +208,7 @@ def logic_main():
                         #logging.info("Voted forward")
                     
                     # check if a measurement is made in front
-                    if -20 < data[0] < 20 and data[1] < 30:
+                    if -20 < data[0] < 20 and data[1] < 20:
                         vote_not_forward += 1
                         vote_left += 1
                         #logging.info("Object in front, not voting forward")
@@ -276,8 +275,6 @@ def logic_main():
 
                 # clear drift correction measurements
                 measurements_at_90 = []
-
-                dist_in_front = 50
                 net_num_left_turns += 1
                 ready_to_move = False
                 able_to_turn = False
@@ -300,12 +297,11 @@ def logic_main():
 
                 # clear drift correction measurements
                 measurements_at_90 = []
-                dist_in_front = 50
                 net_num_left_turns -= 1
                 ready_to_move = False
                 able_to_turn = False
 
-            elif dist_in_front > 30:
+            else:
                 logging.info("No clear decision, moving forward")
                 robot.moveForward(0.2)
                 ready_to_move = False
