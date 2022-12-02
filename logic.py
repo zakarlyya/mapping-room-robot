@@ -234,11 +234,13 @@ def logic_main():
                             logging.info("Drift correction: turning away from wall")
                             robot.turnRight(DRIFT_CORR_VAL)
                             motor_socket.recv()
+                            measurements_at_90 = []
                         # if the measurements are decreasing, turn toward the wall
                         elif measurements_at_90[-1] < measurements_at_90[-2] < measurements_at_90[-3]:
                             logging.info("Drift correction: turning toward wall")
                             robot.turnLeft(DRIFT_CORR_VAL)
                             motor_socket.recv()
+                            measurements_at_90 = []
 
                 robot.moveForward(0.8)
                 ready_to_move = False
