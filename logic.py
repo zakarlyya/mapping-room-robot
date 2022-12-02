@@ -74,7 +74,9 @@ def logic_main():
         elif message ==b"STOP":
             robot.moveForward(0)
             motor_socket.recv()
+            motor_socket.close()
             logging.info("IN LOGIC: Received motor reply %s" % message)
+            return
         else:
             logging.ERROR("Received unknown start signal from main: %s" % message)
 
@@ -136,7 +138,7 @@ def logic_main():
         # mapping_done if robot net_num_left_turns is 4
         if net_num_left_turns == 4:
             starting_wall = True
-            logging.info("Mapping complete")
+            logging.info("Starting wall reached")
 
         # if the start socket has a stop signal, mapping_done is true
         if start_socket in socks and socks[start_socket] == zmq.POLLIN:
@@ -286,6 +288,13 @@ def logic_main():
                 
             # empty the current readings for next iteration
             current_readings = []
+
+    
+    logging.info("Mapping complete")
+    motor_socket.close()
+    server_socket.close()
+    start_socket.close()
+    sensor_socket.close()
 
 # Robot class that tracks the current position, direction, velocity, and movement 
 class Robot:
