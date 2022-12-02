@@ -27,16 +27,14 @@ def sensor_main():
 
     # set default values including sensor angle and number of readings per angle
     angle = -90
-    num_trials = 5
+    num_trials = 3
 
     while True:
-        # get the average distance from the sensor using multiple readings to reduce noise
-        distance = 0
-
         # array which stores distances
         distances = []
 
         for i in range(num_trials):
+            # get the distance from the sensor using multiple readings to reduce noise
             distances.append(ultrasonic.get_distance())
         
         # remove outliers over 5 cm from the median distance

@@ -113,7 +113,7 @@ def logic_main():
     mapping_done = False        # track if mapping is done
     ready_to_move = True        # track if robot is ready to move
     net_num_left_turns = 0      # net number of turns to track where in room
-    dist_in_front = 100         # track distance of wall in front
+    dist_in_front = 100          # track distance of wall in front
     disregard_data = False      # track if data is useful
 
     # Log that we are starting
@@ -126,7 +126,7 @@ def logic_main():
 
         # mapping_done if robot net_num_left_turns is 4
         if net_num_left_turns == 4:
-            mapping_done = True
+            starting_wall = True
             logging.info("Mapping complete")
 
         # if the start socket has a stop signal, mapping_done is true
@@ -195,7 +195,7 @@ def logic_main():
                     
                         # check if a measurement is made in front
                     if -20 < data[0] < 20:
-                        dist_in_front = (0.25 * data[1]) + (1-0.25) * dist_in_front
+                        dist_in_front = (0.35 * data[1]) + (1-0.35) * dist_in_front
                         logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
                         if(dist_in_front < 20):
                             vote_not_forward += 1
@@ -213,12 +213,19 @@ def logic_main():
                 ready_to_move = False
 
             elif vote_left > vote_right and vote_left > 4:
+                if starting_wall:
+                    mapping_done = True
+                    break
                 robot.turnLeft()
                 dist_in_front = 100
                 net_num_left_turns += 1
                 ready_to_move = False
 
             elif vote_right > vote_left and vote_right > 4:
+                if starting_wall:
+                    mapping_done = True
+                    break
+
                 disregard_data = True
                 robot.moveForward(0.5)
                 message = motor_socket.recv()
@@ -289,8 +296,6 @@ class Robot:
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
         self.motor_socket.send(b"F" + str(time).encode())
-        # message = self.motor_socket.recv()
-        # logging.info("Received reply to move from motors %s" % message)
 
         distance = time * self.velocity
 
@@ -310,9 +315,7 @@ class Robot:
     def turnLeft(self):
 
         # transmit a message to the motors via zmq socket to turn left and wait for reply
-        self.motor_socket.send(b"L0.75")
-        # message = self.motor_socket.recv()
-        # logging.info("Received reply to turn from motors %s" % message)
+        self.motor_socket.send(b"L1")
 
         if self.dir == Direction.NORTH:
             self.dir = Direction.WEST
@@ -326,9 +329,7 @@ class Robot:
     def turnRight(self):
 
         # transmit a message to the motors via zmq socket to turn right and wait for reply
-        self.motor_socket.send(b"R0.75")
-        # message = self.motor_socket.recv()
-        # logging.info("Received reply to turn from motors %s" % message)
+        self.motor_socket.send(b"R1")
 
         if self.dir == Direction.NORTH:
             self.dir = Direction.EAST
