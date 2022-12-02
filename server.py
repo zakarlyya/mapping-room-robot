@@ -54,40 +54,41 @@ class MyWidget(pg.GraphicsLayoutWidget):
 
     # function to get data from the robot and update plot
     def getNewData(self):
-        str = self.socket.recv_string() # get data from PUB/SUB socket
-        data = str.split(",")           # split the string up
-        print(data)                     # print the data
+        try:
+            str = self.socket.recv_string() # get data from PUB/SUB socket
+            data = str.split(",")           # split the string up
+            print(data)                     # print the data
 
-        # add data to set of points or update robot position then update the plot
-        if(data[2] == "point"):
-            self.x = np.append(self.x, float(data[0])/100)
-            self.y = np.append(self.y, float(data[1])/100)
-            self.plotPoint.setData(self.x, self.y)  
-        elif(data[2] == "robot"):
-            self.robotX = float(data[0])/100
-            self.robotY = float(data[1])/100
-            self.plotRobot.setData([self.robotX], [self.robotY])
+            # add data to set of points or update robot position then update the plot
+            if(data[2] == "point"):
+                self.x = np.append(self.x, float(data[0])/100)
+                self.y = np.append(self.y, float(data[1])/100)
+                self.plotPoint.setData(self.x, self.y)  
+            elif(data[2] == "robot"):
+                self.robotX = float(data[0])/100
+                self.robotY = float(data[1])/100
+                self.plotRobot.setData([self.robotX], [self.robotY])
+        except KeyboardInterrupt:
+            self.timer.disconnect()
+            print("Exiting")
+            exit()
             
 
 if __name__ == "__main__":
     # create a ZMQ context and connect to PUB/SUB socket and subscribe to all messages
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    robot_ip_address = "192.168.119.227"
+    robot_ip_address = "localhost"
     #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
     print("Listening")
 
-    try:
-        # create graph widget, show, and start timer execution
-        app = QtWidgets.QApplication([])
-        pg.setConfigOptions(antialias=False)
-        win = MyWidget(socket)
-        win.show()
-        win.resize(600,600) 
-        win.raise_()
-        app.exec_()
-    except KeyboardInterrupt: 
-        app.close()
-        print("Exiting")
+    # create graph widget, show, and start timer execution
+    app = QtWidgets.QApplication([])
+    pg.setConfigOptions(antialias=False)
+    win = MyWidget(socket)
+    win.show()
+    win.resize(600,600) 
+    win.raise_()
+    app.exec_()
