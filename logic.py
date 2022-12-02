@@ -145,13 +145,14 @@ def logic_main():
             current_readings.append([angle, distance])
 
             # if the data is useful, send the points over to the server to plot
-            if(not disregard_data and float(distance) <= 40):
+            if(not disregard_data and distance <= 40):
                 # calculate the absolute position of the measured object using the robots current position,
                 # measured angle, and measured distance and then add the location to the positions list
-                point = robot.calculateAbsolutePosition(angle, distance)
-                points.append(point)
-                logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
-                server_socket.send_string("{}, {},point".format(point[0], point[1]))
+                if(angle < -60 and distance > 20):
+                    point = robot.calculateAbsolutePosition(angle, distance)
+                    points.append(point)
+                    logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
+                    server_socket.send_string("{}, {},point".format(point[0], point[1]))
 
             # poll the socket again
             socks = dict(poller.poll())
