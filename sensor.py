@@ -42,7 +42,7 @@ def sensor_main():
         angle += 2
 
         # update increasing value to pan in other direction
-        if angle > 90:
+        if angle > 20:
             angle = -90
         
         # set the robot's head pan angle

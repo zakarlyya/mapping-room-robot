@@ -41,14 +41,11 @@ class Direction(Enum):
 
 def logic_main():
     
-    # Initialize variables
-    current_pos = [0, 0]
-    
-    # use direction enum to set current_direction to NROTH
-    current_direction = Direction.EAST
-
     # create a data structure which stores the coordinates of all points visited by the robot
     points = []  # list of lists
+
+    # number of readings to be received from the sensor
+    num_readings = 55
 
     # Create a zmq context
     context = zmq.Context()
@@ -70,11 +67,10 @@ def logic_main():
     motor_socket = context.socket(zmq.REQ)
     motor_socket.connect("tcp://localhost:5555")
     
-    # create instance of Robot class
-    robot = Robot(pos=current_pos, dir=current_direction, motor_socket=motor_socket)
-    vel = robot.calibrateMotors()
-
-    logging.info("Calibrated motors. Calculated velocity: %s" % vel)
+    # create instance of Robot class and calibrate 
+    robot = Robot(motor_socket=motor_socket)
+    velocity = robot.calibrateMotors()
+    logging.info("Calibrated motors. Calculated velocity: %s" % velocity)
 
     # Wait for go from main
     start_socket.send(b"GO")
@@ -87,7 +83,7 @@ def logic_main():
     message = motor_socket.recv()
     logging.info("IN LOGIC: Received motor reply %s" % message)
     
-    robot.dir = Direction.NORTH
+    robot.dir = Direction.EAST
     robot.pos = [0,0]
 
     sensor_thread = threading.Thread(target=sensor_main)
@@ -143,7 +139,7 @@ def logic_main():
             else:
                 logging.ERROR("Received unknown stop signal from main: %s" % message)
 
-        while sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN and len(current_readings) < 90:
+        while sensor_socket in socks and socks[sensor_socket] == zmq.POLLIN and len(current_readings) < num_readings:
             # receive and parse the sensor data as [angle], [distance]
             sensor_data = sensor_socket.recv_string()
             sensor_data = sensor_data.split(",")
@@ -169,7 +165,7 @@ def logic_main():
             ready_to_move = True
 
         # if the robot is ready to move, move it
-        if ready_to_move and len(current_readings) >= 90:
+        if ready_to_move and len(current_readings) >= num_readings:
             if disregard_data:
                 current_readings = []
                 disregard_data = False
@@ -212,11 +208,11 @@ def logic_main():
                 net_num_left_turns += 1
                 ready_to_move = False
             elif vote_right > vote_left and vote_right > 4:
+                disregard_data = True
                 robot.moveForward(0.5)
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
 
-                disregard_data = True
                 robot.turnRight()
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
@@ -236,12 +232,11 @@ def logic_main():
 
 
 class Robot:
-    def __init__(self, pos, dir, motor_socket):
+    def __init__(self, motor_socket, pos=[0,0], dir=[Direction.EAST]):
         self.pos = pos
         self.dir = dir
         self.velocity = 1
         self.motor_socket = motor_socket
-        motor = Motor()
 
     def calibrateMotors(self):
         pwm=Servo()
