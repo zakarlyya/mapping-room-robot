@@ -229,9 +229,6 @@ def logic_main():
                 if(ENABLE_DRIFT_CORRECTION):
                     # If the robot has made at least 3 measurements at 90 degrees, check last 5 added values to determine if all the measurements are increasing or decreasing
                     if len(measurements_at_90) >= 3:
-                        logging.info(measurements_at_90[-1])
-                        logging.info(measurements_at_90[-2])
-                        logging.info(measurements_at_90[-3])
                         # if the measurements are increasing, turn away from the wall
                         if measurements_at_90[-1] > measurements_at_90[-2] > measurements_at_90[-3]:
                             logging.info("Drift correction: turning away from wall")
@@ -372,28 +369,30 @@ class Robot:
         # transmit a message to the motors via zmq socket to turn left and wait for reply
         self.motor_socket.send(b"L" + str(turn).encode())
 
-        if self.dir == Direction.NORTH:
-            self.dir = Direction.WEST
-        elif self.dir == Direction.WEST:
-            self.dir = Direction.SOUTH
-        elif self.dir == Direction.SOUTH:
-            self.dir = Direction.EAST
-        elif self.dir == Direction.EAST:
-            self.dir = Direction.NORTH
+        if turn == FULL_LEFT_TURN:
+            if self.dir == Direction.NORTH:
+                self.dir = Direction.WEST
+            elif self.dir == Direction.WEST:
+                self.dir = Direction.SOUTH
+            elif self.dir == Direction.SOUTH:
+                self.dir = Direction.EAST
+            elif self.dir == Direction.EAST:
+                self.dir = Direction.NORTH
 
     def turnRight(self, turn=FULL_RIGHT_TURN):
 
         # transmit a message to the motors via zmq socket "R[turn]" and wait for reply
         self.motor_socket.send(b"R" + str(turn).encode())
 
-        if self.dir == Direction.NORTH:
-            self.dir = Direction.EAST
-        elif self.dir == Direction.EAST:
-            self.dir = Direction.SOUTH
-        elif self.dir == Direction.SOUTH:
-            self.dir = Direction.WEST
-        elif self.dir == Direction.WEST:
-            self.dir = Direction.NORTH
+        if turn == FULL_RIGHT_TURN:
+            if self.dir == Direction.NORTH:
+                self.dir = Direction.EAST
+            elif self.dir == Direction.EAST:
+                self.dir = Direction.SOUTH
+            elif self.dir == Direction.SOUTH:
+                self.dir = Direction.WEST
+            elif self.dir == Direction.WEST:
+                self.dir = Direction.NORTH
 
     def getPos(self):
         return self.pos
