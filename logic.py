@@ -111,9 +111,10 @@ def logic_main():
 
     # declare the relevant flags and variables
     mapping_done = False        # track if mapping is done
+    starting_wall = False       # track if robot is at starting wall
     ready_to_move = True        # track if robot is ready to move
     net_num_left_turns = 0      # net number of turns to track where in room
-    dist_in_front = 100          # track distance of wall in front
+    dist_in_front = 100         # track distance of wall in front
     disregard_data = False      # track if data is useful
 
     # Log that we are starting
