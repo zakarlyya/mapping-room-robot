@@ -33,7 +33,7 @@ from sensor import sensor_main
 FULL_LEFT_TURN = 1
 FULL_RIGHT_TURN = 1
 ENABLE_DRIFT_CORRECTION = True
-DRIFT_CORR_VAL = 0.3
+DRIFT_CORR_VAL = 0.5
 
 # define the cardinal values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
 class Direction(Enum):
@@ -155,7 +155,7 @@ def logic_main():
             sensor_data = sensor_data.split(",")
             angle = float(sensor_data[0])
             distance = float(sensor_data[1])
-            logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
+            # logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
             current_readings.append([angle, distance])
 
             # if the data is useful, send the points over to the server to plot
@@ -165,7 +165,7 @@ def logic_main():
                 if(angle > -60 or distance < 20):
                     point = robot.calculateAbsolutePosition(angle, distance)
                     points.append(point)
-                    logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
+                    # logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
                     server_socket.send_string("{}, {},point".format(point[0], point[1]))
 
             # poll the socket again
@@ -232,12 +232,12 @@ def logic_main():
                         # if the measurements are increasing, turn away from the wall
                         if measurements_at_90[-1] > measurements_at_90[-2] > measurements_at_90[-3]:
                             logging.info("Drift correction: turning away from wall")
-                            robot.turnLeft(DRIFT_CORR_VAL)
+                            robot.turnRight(DRIFT_CORR_VAL)
                             motor_socket.recv()
                         # if the measurements are decreasing, turn toward the wall
                         elif measurements_at_90[-1] < measurements_at_90[-2] < measurements_at_90[-3]:
                             logging.info("Drift correction: turning toward wall")
-                            robot.turnRight(DRIFT_CORR_VAL)
+                            robot.turnLeft(DRIFT_CORR_VAL)
                             motor_socket.recv()
 
                 robot.moveForward(0.8)
