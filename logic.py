@@ -155,7 +155,7 @@ def logic_main():
             sensor_data = sensor_data.split(",")
             angle = float(sensor_data[0])
             distance = float(sensor_data[1])
-            # logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
+            logging.info("Sensor reads - angle: %s, distance: %s" % (sensor_data[0], sensor_data[1]))
             current_readings.append([angle, distance])
 
             # if the data is useful, send the points over to the server to plot
@@ -165,8 +165,13 @@ def logic_main():
                 if(angle > -60 or distance < 20):
                     point = robot.calculateAbsolutePosition(angle, distance)
                     points.append(point)
-                    # logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
+                    # logging.info("Abs point: %s" % point)
                     server_socket.send_string("{}, {},point".format(point[0], point[1]))
+
+                # if the measurement is 90 or 85, store the value for drift correction
+                if angle < -88:
+                    logging.info("APPEND VALUE %s" % str(distance))
+                    measurements_at_90.append(distance)
 
             # poll the socket again
             socks = dict(poller.poll())
@@ -201,13 +206,8 @@ def logic_main():
                     if data[0] < -60:
                         vote_forward += 1
                         #logging.info("Voted forward")
-
-                        # if the measurement is 90 or 85, store the value for drift correction
-                        if data[0] < -88:
-                            logging.info("APPEND VALUE %s" % str(data[1]))
-                            measurements_at_90.append(data[1])
                     
-                        # check if a measurement is made in front
+                    # check if a measurement is made in front
                     if -20 < data[0] < 20:
                         dist_in_front = (0.4 * data[1]) + (1-0.4) * dist_in_front
                         #logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
