@@ -169,7 +169,7 @@ def logic_main():
                     server_socket.send_string("{}, {},point".format(point[0], point[1]))
 
                 # if the measurement is 90 or 85, store the value for drift correction
-                if angle == -90:
+                if angle == -80:
                     logging.info("APPEND VALUE %s" % str(distance))
                     measurements_at_90.append(distance)
 
