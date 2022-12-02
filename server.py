@@ -39,6 +39,8 @@ class MyWidget(pg.GraphicsLayoutWidget):
         self.plotItem.showGrid(x=True, y=True)
         self.plotItem.setLabel('left', units="cm")
         self.plotItem.setLabel('bottom', units="cm")
+        self.plotItem.setAspectLocked()
+        self.plotItem.setAutoVisible(x=True, y=True)
 
         # add plot item for points and robot
         self.plotPoint = self.plotItem.plot([], pen=None, symbolBrush=(255,0,0), symbolSize=5, symbolPen=None)
