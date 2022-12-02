@@ -89,4 +89,5 @@ if __name__ == "__main__":
         win.raise_()
         app.exec_()
     except KeyboardInterrupt: 
+        app.close()
         print("Exiting")

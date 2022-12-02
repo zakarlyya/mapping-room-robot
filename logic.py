@@ -30,8 +30,8 @@ from Ultrasonic import *
 from servo import *
 from sensor import sensor_main
 
-FULL_LEFT_TURN = 0.9
-FULL_RIGHT_TURN = 0.9
+FULL_LEFT_TURN = 0.7
+FULL_RIGHT_TURN = 0.7
 ENABLE_DRIFT_CORRECTION = True
 DRIFT_CORR_VAL = 0.1
 
