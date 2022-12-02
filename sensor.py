@@ -27,7 +27,7 @@ def sensor_main():
 
     # set default values including sensor angle and number of readings per angle
     angle = -90
-    num_trials = 2 
+    num_trials = 1
 
     while True:
         # get the average distance from the sensor using multiple readings to reduce noise
