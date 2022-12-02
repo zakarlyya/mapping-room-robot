@@ -209,7 +209,7 @@ def logic_main():
                         #logging.info("Voted forward")
                     
                     # check if a measurement is made in front
-                    if -20 < data[0] < 20 and data[1] < 25:
+                    if -20 < data[0] < 20 and data[1] < 30:
                         vote_not_forward += 1
                         vote_left += 1
                         #logging.info("Object in front, not voting forward")
@@ -264,7 +264,7 @@ def logic_main():
                             motor_socket.recv()
                             measurements_at_90 = []
 
-                robot.moveForward(0.8)
+                robot.moveForward(0.6)
                 able_to_turn = True
                 ready_to_move = False
 
@@ -307,7 +307,7 @@ def logic_main():
 
             elif dist_in_front > 30:
                 logging.info("No clear decision, moving forward")
-                robot.moveForward(0.4)
+                robot.moveForward(0.2)
                 ready_to_move = False
                 
             # empty the current readings for next iteration
