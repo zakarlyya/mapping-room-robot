@@ -230,16 +230,40 @@ def logic_main():
                 if(ENABLE_DRIFT_CORRECTION):
                     # If the robot has made at least 3 measurements at 90 degrees, check last 5 added values to determine if all the measurements are increasing or decreasing
                     if len(measurements_at_90) >= 3:
-                        # if the measurements are increasing, turn away from the wall
-                        if measurements_at_90[-1] - 1 > measurements_at_90[-2] and measurements_at_90[-2] - 1 > measurements_at_90[-3]:
-                            logging.info("Drift correction: turning away from wall")
+                        # calculate measurement diff
+                        diff_one = measurements_at_90[-1] - measurements_at_90[-2]
+                        diff_two = measurements_at_90[-2] - measurements_at_90[-3]
+                        
+                        # if the measurements are increasing, turn toward the wall
+                        if diff_one > -0.5 and diff_two > -0.5 and diff_one < 0 and diff_two < 0:
+                            logging.info("Small drift correction: turning toward from wall")
+                            robot.turnRight(DRIFT_CORR_VAL/2)
+                            motor_socket.recv()
+                            measurements_at_90 = []
+                        # if the measurements are decreasing, turn away from the wall
+                        elif diff_one < 0.5 and diff_two < 0.5 and diff_one > 0 and diff_two > 0:
+                            logging.info("Small drift correction: turning away from wall")
+                            robot.turnLeft(DRIFT_CORR_VAL/2)
+                            motor_socket.recv()
+                            measurements_at_90 = []
+                        elif 1 > diff_one > 0.5 and 1 > diff_two > 0.5:
+                            logging.info("Medium drift correction: turning away from wall")
+                            robot.turnLeft(DRIFT_CORR_VAL)
+                            motor_socket.recv()
+                            measurements_at_90 = []
+                        elif -1 < diff_one < -0.5 and -1 < diff_two < -0.5:
+                            logging.info("Medium drift correction: turning toward from wall")
                             robot.turnRight(DRIFT_CORR_VAL)
                             motor_socket.recv()
                             measurements_at_90 = []
-                        # if the measurements are decreasing, turn toward the wall
-                        elif measurements_at_90[-1] + 1 < measurements_at_90[-2] and measurements_at_90[-2] + 1 < measurements_at_90[-3]:
-                            logging.info("Drift correction: turning toward wall")
-                            robot.turnLeft(DRIFT_CORR_VAL)
+                        elif diff_one < -1 and diff_two < -1:
+                            logging.info("Large drift correction: turning toward from wall")
+                            robot.turnRight(DRIFT_CORR_VAL*2)
+                            motor_socket.recv()
+                            measurements_at_90 = []
+                        elif diff_one > 1 and diff_two > 1:
+                            logging.info("Large drift correction: turning away from wall")
+                            robot.turnLeft(DRIFT_CORR_VAL*2)
                             motor_socket.recv()
                             measurements_at_90 = []
 
