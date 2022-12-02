@@ -53,7 +53,6 @@ if __name__ == '__main__':
             break
         elif message == "STOP":
             logic_socket.send(b"STOP")
-            logic_socket.recv()
             break
         else:
             logging.info("Unknown command: %s" % message)
