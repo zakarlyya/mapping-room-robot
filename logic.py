@@ -290,11 +290,15 @@ def logic_main():
             current_readings = []
 
     
+    # terminate threads and sockets
     logging.info("Mapping complete")
     motor_socket.close()
     server_socket.close()
     start_socket.close()
     sensor_socket.close()
+
+    sensor_thread.join()
+    
 
 # Robot class that tracks the current position, direction, velocity, and movement 
 class Robot:
