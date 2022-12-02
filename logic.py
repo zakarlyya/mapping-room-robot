@@ -231,13 +231,13 @@ def logic_main():
                     # If the robot has made at least 3 measurements at 90 degrees, check last 5 added values to determine if all the measurements are increasing or decreasing
                     if len(measurements_at_90) >= 3:
                         # if the measurements are increasing, turn away from the wall
-                        if measurements_at_90[-1] > measurements_at_90[-2] > measurements_at_90[-3]:
+                        if measurements_at_90[-1] - 1 > measurements_at_90[-2] and measurements_at_90[-2] - 1 > measurements_at_90[-3]:
                             logging.info("Drift correction: turning away from wall")
                             robot.turnRight(DRIFT_CORR_VAL)
                             motor_socket.recv()
                             measurements_at_90 = []
                         # if the measurements are decreasing, turn toward the wall
-                        elif measurements_at_90[-1] < measurements_at_90[-2] < measurements_at_90[-3]:
+                        elif measurements_at_90[-1] + 1 < measurements_at_90[-2] and measurements_at_90[-2] + 1 < measurements_at_90[-3]:
                             logging.info("Drift correction: turning toward wall")
                             robot.turnLeft(DRIFT_CORR_VAL)
                             motor_socket.recv()
