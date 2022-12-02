@@ -208,7 +208,7 @@ def logic_main():
                         #logging.info("Voted forward")
                     
                     # check if a measurement is made in front
-                    if -20 < data[0] < 20 and data[1] < 20:
+                    if -20 < data[0] < 20 and data[1] < 25:
                         vote_not_forward += 1
                         vote_left += 1
                         #logging.info("Object in front, not voting forward")

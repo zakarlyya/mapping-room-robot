@@ -71,9 +71,9 @@ class MyWidget(pg.GraphicsLayoutWidget):
             elif(data[2] == "done"):
                 self.timer.killTimer()
                 self.socket.close()
-                self.close()
                 print("Done mapping")
                 input("Press Enter to exit")
+                self.close()
                 return
         except KeyboardInterrupt:
             self.timer.disconnect()
