@@ -30,6 +30,11 @@ from Ultrasonic import *
 from servo import *
 from sensor import sensor_main
 
+FULL_LEFT_TURN = 1
+FULL_RIGHT_TURN = 1
+ENABLE_DRIFT_CORRECTION = True
+DRIFT_CORR_VAL = 0.1
+
 # define the cardinal values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
 class Direction(Enum):
     NORTH = 0
@@ -37,15 +42,8 @@ class Direction(Enum):
     SOUTH = 2
     WEST = 3
 
-
-
 # define the main logic for the mapping
 def logic_main():
-    
-    ENABLE_DRIFT_CORRECTION = True
-    FULL_LEFT_TURN = 1
-    FULL_RIGHT_TURN = 1
-    DRIFT_CORR_VAL = 0.1
 
     points = []             # structure which stores the coordinates of all points seen by the robot
     num_readings = 55       # number of readings to be received from the sensor
@@ -100,7 +98,7 @@ def logic_main():
     robot.pos = [0,0]
 
     # start ultrasonic sensor thread
-    sensor_thread = threading.Thread(target=sensor_main)
+    sensor_thread = threading.Thread(target=sensor_main, daemon=True)
     sensor_thread.start()
 
     # create a zmq PUB/SUB sensor_socket to communicate with the sensors
@@ -123,6 +121,7 @@ def logic_main():
     starting_wall = False           # track if robot is at starting wall
     ready_to_move = True            # track if robot is ready to move
     disregard_data = False          # track if data is useful
+    able_to_turn = False            # track if the robot is able to turn
     dist_in_front = 100             # track distance of wall in front
     net_num_left_turns = 0          # net number of turns to track where in room
     measurements_at_90 = []         # store measurements at 90 degrees for drift correction
@@ -164,11 +163,16 @@ def logic_main():
             if(not disregard_data and distance <= 40):
                 # calculate the absolute position of the measured object using the robots current position,
                 # measured angle, and measured distance and then add the location to the positions list
-                if(angle > -60 or distance < 20):
+                if(angle > -60 or distance < 30):
                     point = robot.calculateAbsolutePosition(angle, distance)
                     points.append(point)
-                    logging.info("Raw Angle %s\tRaw Dist %s\t Abs point: %s" % (sensor_data[0], sensor_data[1], point))
+                    # logging.info("Abs point: %s" % point)
                     server_socket.send_string("{}, {},point".format(point[0], point[1]))
+
+                # if the measurement is 90 or 85, store the value for drift correction
+                if angle == -80:
+                    logging.info("APPEND VALUE %s" % str(distance))
+                    measurements_at_90.append(distance)
 
             # poll the socket again
             socks = dict(poller.poll())
@@ -202,25 +206,21 @@ def logic_main():
                     # if a measurement is made on the right 
                     if data[0] < -60:
                         vote_forward += 1
-                        logging.info("Voted forward")
-
-                        # if the measurement is 90 or 85, store the value for drift correction
-                        if data[0] == -90 or data[0] == -85:
-                            measurements_at_90.append(data[1])
+                        #logging.info("Voted forward")
                     
-                        # check if a measurement is made in front
+                    # check if a measurement is made in front
                     if -20 < data[0] < 20:
-                        dist_in_front = (0.4 * data[1]) + (1-0.4) * dist_in_front
-                        logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
+                        dist_in_front = (0.5 * data[1]) + (1-0.5) * dist_in_front
+                        #logging.info("Distance to nearest object in front of robot: %s" % dist_in_front)
                         if(dist_in_front < 20):
                             vote_not_forward += 1
                             vote_left += 1
-                            logging.info("Object in front, not voting forward")
+                            #logging.info("Object in front, not voting forward")
 
                 # if the measurement is more than 30 away and angle is facing right
                 elif data[0] < -60:
                     vote_right += 1
-                    logging.info("No object detected on the right, voting turn right")
+                    #logging.info("No object detected on the right, voted turn right")
 
             # compare votes for the next move and act accordingly
             if vote_forward > vote_not_forward and vote_forward > 4:
@@ -228,24 +228,26 @@ def logic_main():
                 # check if the robot's distance measurements on the right are drifting over time
                 # if they are, then turn toward or away from the wall by (DRIFT_CORR_VAL)
                 if(ENABLE_DRIFT_CORRECTION):
-                    
                     # If the robot has made at least 3 measurements at 90 degrees, check last 5 added values to determine if all the measurements are increasing or decreasing
                     if len(measurements_at_90) >= 3:
                         # if the measurements are increasing, turn away from the wall
-                        if measurements_at_90[-1] > measurements_at_90[-2] > measurements_at_90[-3]:
+                        if measurements_at_90[-1] - 1 > measurements_at_90[-2] and measurements_at_90[-2] - 1 > measurements_at_90[-3]:
                             logging.info("Drift correction: turning away from wall")
-                            robot.turnLeft(DRIFT_CORR_VAL)
-                            motor_socket.recv()
-                        # if the measurements are decreasing, turn toward the wall
-                        elif measurements_at_90[-1] < measurements_at_90[-2] < measurements_at_90[-3]:
-                            logging.info("Drift correction: turning toward wall")
                             robot.turnRight(DRIFT_CORR_VAL)
                             motor_socket.recv()
+                            measurements_at_90 = []
+                        # if the measurements are decreasing, turn toward the wall
+                        elif measurements_at_90[-1] + 1 < measurements_at_90[-2] and measurements_at_90[-2] + 1 < measurements_at_90[-3]:
+                            logging.info("Drift correction: turning toward wall")
+                            robot.turnLeft(DRIFT_CORR_VAL)
+                            motor_socket.recv()
+                            measurements_at_90 = []
 
                 robot.moveForward(0.8)
+                able_to_turn = True
                 ready_to_move = False
 
-            elif vote_left > vote_right and vote_left > 4:
+            elif able_to_turn and vote_left > vote_right and vote_left > 4:
                 if starting_wall:
                     mapping_done = True
                     break
@@ -257,8 +259,9 @@ def logic_main():
                 dist_in_front = 100
                 net_num_left_turns += 1
                 ready_to_move = False
+                able_to_turn = False
 
-            elif vote_right > vote_left and vote_right > 4:
+            elif able_to_turn and vote_right > vote_left and vote_right > 4:
                 if starting_wall:
                     mapping_done = True
                     break
@@ -279,11 +282,11 @@ def logic_main():
                 dist_in_front = 100
                 net_num_left_turns -= 1
                 ready_to_move = False
+                able_to_turn = False
 
             elif dist_in_front > 30:
                 logging.info("No clear decision, moving forward")
-                # Check that motor socket is available to recieve
-                robot.moveForward(0.2)
+                robot.moveForward(0.4)
                 ready_to_move = False
                 
             # empty the current readings for next iteration
@@ -296,6 +299,15 @@ def logic_main():
     server_socket.close()
     start_socket.close()
     sensor_socket.close()
+    
+    # save the points to a file
+    with open('points.txt', 'w') as f:
+        for point in points:
+            f.write(str(point))
+            f.write('\n')
+        
+    # mapping is complete and data is saved
+    logging.info("Mapping complete, points saved to points.txt")
 
 
 # Robot class that tracks the current position, direction, velocity, and movement 
@@ -365,28 +377,30 @@ class Robot:
         # transmit a message to the motors via zmq socket to turn left and wait for reply
         self.motor_socket.send(b"L" + str(turn).encode())
 
-        if self.dir == Direction.NORTH:
-            self.dir = Direction.WEST
-        elif self.dir == Direction.WEST:
-            self.dir = Direction.SOUTH
-        elif self.dir == Direction.SOUTH:
-            self.dir = Direction.EAST
-        elif self.dir == Direction.EAST:
-            self.dir = Direction.NORTH
+        if turn == FULL_LEFT_TURN:
+            if self.dir == Direction.NORTH:
+                self.dir = Direction.WEST
+            elif self.dir == Direction.WEST:
+                self.dir = Direction.SOUTH
+            elif self.dir == Direction.SOUTH:
+                self.dir = Direction.EAST
+            elif self.dir == Direction.EAST:
+                self.dir = Direction.NORTH
 
     def turnRight(self, turn=FULL_RIGHT_TURN):
 
         # transmit a message to the motors via zmq socket "R[turn]" and wait for reply
         self.motor_socket.send(b"R" + str(turn).encode())
 
-        if self.dir == Direction.NORTH:
-            self.dir = Direction.EAST
-        elif self.dir == Direction.EAST:
-            self.dir = Direction.SOUTH
-        elif self.dir == Direction.SOUTH:
-            self.dir = Direction.WEST
-        elif self.dir == Direction.WEST:
-            self.dir = Direction.NORTH
+        if turn == FULL_RIGHT_TURN:
+            if self.dir == Direction.NORTH:
+                self.dir = Direction.EAST
+            elif self.dir == Direction.EAST:
+                self.dir = Direction.SOUTH
+            elif self.dir == Direction.SOUTH:
+                self.dir = Direction.WEST
+            elif self.dir == Direction.WEST:
+                self.dir = Direction.NORTH
 
     def getPos(self):
         return self.pos

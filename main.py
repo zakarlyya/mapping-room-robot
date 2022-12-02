@@ -20,8 +20,8 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='(%(threadName)-10s) %(message)s',)
 
     # create threads
-    logic_thread = threading.Thread(target=logic_main)
-    motors_thread = threading.Thread(target=motors_main)
+    logic_thread = threading.Thread(target=logic_main, daemon=True)
+    motors_thread = threading.Thread(target=motors_main, daemon=True)
 
     # start the threads
     motors_thread.start()
@@ -59,8 +59,6 @@ if __name__ == '__main__':
 
     # join threads
     logic_thread.join()
-    motors_thread.join()
 
     # close sockets
-    # server_socket.close()
     logic_socket.close()
