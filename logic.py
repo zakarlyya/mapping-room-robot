@@ -30,10 +30,10 @@ from Ultrasonic import *
 from servo import *
 from sensor import sensor_main
 
-FULL_LEFT_TURN = 0.7
-FULL_RIGHT_TURN = 0.7
+FULL_LEFT_TURN = 0.5
+FULL_RIGHT_TURN = 0.5
 ENABLE_DRIFT_CORRECTION = True
-DRIFT_CORR_VAL = 0.1
+DRIFT_CORR_VAL = 0.05
 
 # define the cardinal values NORTH, EAST, SOUTH, WEST as 0, 1, 2, 3
 class Direction(Enum):
@@ -316,7 +316,9 @@ def logic_main():
             # empty the current readings for next iteration
             current_readings = []
 
-    
+    # signal to subscribers that we are done
+    server_socket.send_string(",,done")
+
     # terminate threads and sockets
     logging.info("Mapping complete")
     motor_socket.close()

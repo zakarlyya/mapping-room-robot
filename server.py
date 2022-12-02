@@ -68,8 +68,14 @@ class MyWidget(pg.GraphicsLayoutWidget):
                 self.robotX = float(data[0])/100
                 self.robotY = float(data[1])/100
                 self.plotRobot.setData([self.robotX], [self.robotY])
+            elif(data[2] == "done"):
+                self.timer.disconnect()
+                self.socket.close()
+                print("Done mapping")
+                return
         except KeyboardInterrupt:
             self.timer.disconnect()
+            self.socket.close()
             print("Exiting")
             exit()
             
@@ -78,11 +84,11 @@ if __name__ == "__main__":
     # create a ZMQ context and connect to PUB/SUB socket and subscribe to all messages
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    robot_ip_address = "localhost"
+    robot_ip_address = "192.168.119.227"
     #robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
-    print("Listening")
+    print("Listening for points")
 
     # create graph widget, show, and start timer execution
     app = QtWidgets.QApplication([])
