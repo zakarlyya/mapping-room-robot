@@ -50,6 +50,13 @@ def logic_main():
     # create a zmq REQ/REP socket for start or stop signal from main
     start_socket = context.socket(zmq.REP)
     start_socket.bind("tcp://*:5557")
+    
+    # create a zmq REQ/REP motor_socket to communicate with the motors
+    motor_socket = context.socket(zmq.REQ)
+    motor_socket.connect("tcp://localhost:5555")
+    
+    # create instance of Robot class and calibrate velcity
+    robot = Robot(motor_socket=motor_socket)
 
     # wait for the start signal from main.py on start socket
     while True:
@@ -57,15 +64,13 @@ def logic_main():
         if message == b"START":
             logging.info("Received start signal from main")
             break
+        elif message ==b"STOP":
+            robot.moveForward(0)
+            motor_socket.recv()
+            logging.info("IN LOGIC: Received motor reply %s" % message)
         else:
             logging.ERROR("Received unknown start signal from main: %s" % message)
 
-    # create a zmq REQ/REP motor_socket to communicate with the motors
-    motor_socket = context.socket(zmq.REQ)
-    motor_socket.connect("tcp://localhost:5555")
-    
-    # create instance of Robot class and calibrate velcity
-    robot = Robot(motor_socket=motor_socket)
     velocity = robot.calibrateMotors()
     logging.info("Calibrated motors. Calculated velocity: %s" % velocity)
 
