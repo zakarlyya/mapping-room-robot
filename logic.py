@@ -259,6 +259,7 @@ def logic_main():
                 dist_in_front = 100
                 net_num_left_turns += 1
                 ready_to_move = False
+                able_to_turn = False
 
             elif able_to_turn and vote_right > vote_left and vote_right > 4:
                 if starting_wall:
@@ -281,6 +282,7 @@ def logic_main():
                 dist_in_front = 100
                 net_num_left_turns -= 1
                 ready_to_move = False
+                able_to_turn = False
 
             elif dist_in_front > 30:
                 logging.info("No clear decision, moving forward")
