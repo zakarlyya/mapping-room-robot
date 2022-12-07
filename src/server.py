@@ -47,10 +47,11 @@ class MyWidget(pg.GraphicsLayoutWidget):
         self.plotRobot = self.plotItem.plot([], pen=None, symbolBrush=(0,255,0), symbolSize=20, symbolPen=None)
         self.plotRobot.setData([self.robotX], [self.robotY])
   
-        self.timer = QtCore.QTimer(self)            # set timer for refreshing grpah and data
-        self.timer.setInterval(1)                   # in milliseconds
+        # schedule the plot refreshing
+        self.timer = QtCore.QTimer(self)            # create timer
+        self.timer.setInterval(1)                   # set timer in milliseconds
         self.timer.start()                          # start the timer
-        self.timer.timeout.connect(self.getNewData) # call function to update data on timer
+        self.timer.timeout.connect(self.getNewData) # call function on timeout
 
     # function to get data from the robot and update plot
     def getNewData(self):
@@ -68,6 +69,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
                 self.robotX = float(data[0])/100
                 self.robotY = float(data[1])/100
                 self.plotRobot.setData([self.robotX], [self.robotY])
+            # if robot has finished mapping, prompt user to exit
             elif(data[2] == "done"):
                 self.timer.killTimer(self.timer.timerId())
                 self.socket.close()
@@ -75,6 +77,7 @@ class MyWidget(pg.GraphicsLayoutWidget):
                 input("Press Enter to exit")
                 self.close()
                 return
+                
         except KeyboardInterrupt:
             self.timer.stop()
             self.timer.killTimer(self.timer.timerId())
@@ -88,8 +91,7 @@ if __name__ == "__main__":
     # create a ZMQ context and connect to PUB/SUB socket and subscribe to all messages
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    robot_ip_address = "192.168.119.227"
-    #robot_ip_address = input("Enter robot IP address: ")
+    robot_ip_address = input("Enter robot IP address: ")
     socket.connect ("tcp://%s:5558" % robot_ip_address)
     socket.subscribe("")
     print("Listening for points")
@@ -103,5 +105,6 @@ if __name__ == "__main__":
         win.resize(600,600) 
         win.raise_()
         app.exec_()
+
     except KeyboardInterrupt:
         print("Exiting")
