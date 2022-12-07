@@ -3,7 +3,7 @@
 #
 # Retrieves sensor data. While conducing "wall following" mode, it first 
 # calculates the coordinate location all new points (if any). 
-
+#
 # If any points are in front of the robot within one robot's length and 
 # to the right, it turns left. If no object in front or right, it moves 
 # forward and turns right until it detects an object on the right.
@@ -12,10 +12,8 @@
 # Waits for motor reply
 # Requests sensor data after motor movement
 # Wait for sensor data
-# Calculate next move
-# Repeat
-#
-# Terminate when robot comes back to 0,0
+# Calculate next move and repeat
+# Terminate when robot has looped around entire toom
 
 # import necessary libraries
 import logging
@@ -30,6 +28,7 @@ from Ultrasonic import *
 from servo import *
 from sensor import sensor_main
 
+# set global constants
 FULL_LEFT_TURN = 0.35
 FULL_RIGHT_TURN = 0.4
 ENABLE_DRIFT_CORRECTION = True
@@ -78,6 +77,7 @@ def logic_main():
         else:
             logging.ERROR("Received unknown start signal from main: %s" % message)
 
+    # calibrate the motors and get the robot's velocity at set speed
     velocity = robot.calibrateMotors()
     logging.info("Calibrated motors. Calculated velocity: %s" % velocity)
 
@@ -263,10 +263,12 @@ def logic_main():
                             motor_socket.recv()
                             measurements_at_90 = []
 
+                # move forward and set flags
                 robot.moveForward(0.6)
                 able_to_turn = True
                 ready_to_move = False
 
+            # check for votes to turn left
             elif able_to_turn and vote_left > vote_right and vote_left > 4:
                 if starting_wall:
                     mapping_done = True
@@ -279,20 +281,22 @@ def logic_main():
                 ready_to_move = False
                 able_to_turn = False
 
+            # check for votes to turn right
             elif able_to_turn and vote_right > vote_left and vote_right > 4:
                 if starting_wall:
                     mapping_done = True
                     break
 
+                # disregard any next turn immediately after turning once
                 disregard_data = True
                 robot.moveForward(0.5)
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
 
+                # turn and move forward 
                 robot.turnRight()
                 message = motor_socket.recv()
                 logging.info("IN TURNING: Received motor reply %s" % message)
-
                 robot.moveForward(1)
 
                 # clear drift correction measurements
@@ -370,12 +374,13 @@ class Robot:
 
         return self.velocity
 
-    # Distance is specified in inches
+    # function to move forward and update robot position
     def moveForward(self, time):
 
         # transmit a message the motors via zmq socket as F[distance] as a string and wait for reply
         self.motor_socket.send(b"F" + str(time).encode())
 
+        # calculate the distance traveled to update position 
         distance = time * self.velocity
 
         # if the robot is facing north, update the y coordinate of the robot position
@@ -391,8 +396,8 @@ class Robot:
         elif self.dir == Direction.WEST:
             self.pos[0] = self.pos[0] - distance
 
+    # function to turn left and update robot direction
     def turnLeft(self, turn=FULL_LEFT_TURN):
-
         # transmit a message to the motors via zmq socket to turn left and wait for reply
         self.motor_socket.send(b"L" + str(turn).encode())
 
@@ -406,8 +411,8 @@ class Robot:
             elif self.dir == Direction.EAST:
                 self.dir = Direction.NORTH
 
+    # function to turn right and update robot direction
     def turnRight(self, turn=FULL_RIGHT_TURN):
-
         # transmit a message to the motors via zmq socket "R[turn]" and wait for reply
         self.motor_socket.send(b"R" + str(turn).encode())
 
