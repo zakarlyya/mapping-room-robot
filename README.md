@@ -16,11 +16,16 @@ This repository contains the code for an autonomous robot that maps a room by fo
 
 ## Operating Instructions
 1. Connect to the Raspberry Pi robot
+
 2. Download the files in src/ to the Pi
 3. Launch the main program file using the command below
-    > python main.py
+    ```
+    python main.py
+    ```
 4. (optional) Launch the server program on any clients using the command below and enter the Pi's IP address when prompted
-    > python server.py
+    ```
+    python server.py
+    ```
 5. Position the robot facing a wall about 1-3 meters away
 6. On the Pi, type START and hit enter to begin calibration
 7. Then, on the Pi, type GO to start the mapping
