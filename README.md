@@ -10,6 +10,10 @@ This repository contains the code for an autonomous robot that maps a room by fo
 <br/><br/>
 ![Example output](/images/mapping.png)
 
+## Equipment
+ - Freenove 4WD Smart Car
+ - Raspberry Pi 4B
+
 ## Operating Instructions
 1. Connect to the Raspberry Pi robot
 2. Download the files in src/ to the Pi
