@@ -37,11 +37,11 @@ def sensor_main():
             # get the distance from the sensor using multiple readings to reduce noise
             distances.append(ultrasonic.get_distance())
         
-        # remove outliers over 5 cm from the median distance
+        # remove outliers over 5 cm away from the median distance
         median = sorted(distances)[len(distances)//2]
         distances = [x for x in distances if x < median + 5 and x > median - 5]
 
-        # get the average distance
+        # get the average distance from readings
         distance = sum(distances)/len(distances)
 
         # send the average distance measured for some angle
@@ -49,8 +49,6 @@ def sensor_main():
         
         # update the angle iteratively
         angle += 2
-
-        # update increasing value to pan in other direction
         if angle > 20:
             angle = -90
         
